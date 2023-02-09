@@ -133,3 +133,6 @@ dmypy.json
 /srv.pid
 /output/
 /output-publish/
+
+#Blog stuff
+/sources/
