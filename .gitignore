@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#Pelican
+/pelican.pid
+/srv.pid
+/output/
+/output-publish/
