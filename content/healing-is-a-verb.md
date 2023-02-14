@@ -1,8 +1,9 @@
 Title: Healing is a Verb
 Date: 2023-02-08
-Tags: non-technical posting, video games, Chicory: A Colorful Tale, big feelings
+Tags: video games, Chicory: A Colorful Tale, big feelings
+Category: Non Tech
 Slug: healing-is-a-verb
-Summary: How many chances does it take to be someone better?
+Summary: This coloring book also has a lot to say about second chances.
 
 ![Chicory the Bunny reaching down and helping Pizza the Dog]({static}/images/test_screen.gif)
 
@@ -56,8 +57,8 @@ As Pizza goes to face the source of corruption, even with the brush trials, they
 A Colorful Tale pulls the same hat trick nearly all games do when they’re good: solutions are much, much harder than problems. A Colorful Tale isn’t the place to try and champion what it’ll take to build a new system that supports its Wielders. Too much real life is tied up in that-- solutions out here are messy, complex, and oft-times painful. The game takes a well-earned shortcut that gestures at a real solution: democratizing the Brush. Brushless, Pizza and Chicory reunite at the base of the Wielder’s Tower. Luncheon is covered in darkness. Everyone has left. The monument to the Wielder’s failures is staring them in the face. They embrace. It feels like the first true hug they’ve given each other-- the first time they’ve met as equals. They know.
 
 Chicory finally gives Pizza an answer to the question that has been hounding the dog the entire game:
-Say it true-- am I worthy? Can I do this?
-By the time I could have given you that approval, you already had the Brush and had passed a trial harder than any wielder before you. You’re bigger than my approval.
+> Say it true-- am I worthy? Can I do this?  
+> By the time I could have given you that approval, you already had the Brush and had passed a trial harder than any wielder before you. You’re bigger than my approval.
 
 This gives Pizza the insight and courage the poor dog needs-- along with Chicory’s reframing around who can be An Artist-- to grow a new brush tree and make a brush, out of whole cloth.
 Pizza goes back in. Chicory has sent her janitor to clean her messes countless times before, and isn’t about to stop.

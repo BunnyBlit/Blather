@@ -1,22 +1,25 @@
 body {
-    font-family : monospace ;
-    font-size : 100% ;
-    background-color : white ;
-    color : #111 ;
+    font-family : Merriweather,serif;
+    font-size : 1.3em ;
+    background-color : hsl(216, 43.5%, 9%) ;
+    color : hsl(60,73.3%,94.1%) ;
     width : 80% ;
     min-width : 400px ;
     min-height : 200px ;
     padding : 1em ;
-    margin : 5% 10% ;
+    margin : 5%;
     border : thin solid gray ;
     border-radius : 5px ;
     display : block ;
+    line-height: 1.55;
+    font-weight: normal;
 }
 
-a:link    { color : blue ; text-decoration : none ;      }
-a:hover   { color : blue ; text-decoration : underline ; }
-a:visited { color : blue ;                               }
+a:link    { color :  hsl(308, 100%, 83%) ; text-decoration : none ;      }
+a:hover   { color : hsl(308,100%,83%) ; text-decoration : underline ; }
+a:visited { color : rgb(219, 168, 255) ;                               }
 
+/* preserve original color on big links */
 h1 a { color : inherit !important }
 h2 a { color : inherit !important }
 h3 a { color : inherit !important }
@@ -28,6 +31,15 @@ pre {
     margin : 2em 1em 2em 4em ;
 }
 
+blockquote {
+    padding: 0em 0.5em;
+    border-left: 0.3em solid hsl(47,100%,83.7%);
+}
+
+p {
+    padding: 0.5em;
+}
+
 #menu li {
     display : inline ;
 }
@@ -35,4 +47,33 @@ pre {
 #post-list {
     margin-bottom : 1em ;
     margin-top : 1em ;
+    list-style-type: none;
+}
+
+article img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 60%;
+    border: thin solid hsl(47,100%,83.7%);
+}
+.navbar {
+    border-bottom: 0.1em solid ;
+}
+.navbar > span {
+    margin: 1em;
+}
+.site-title {
+    margin: 0em;
+}
+.entry-title {
+    margin-top: 0.5em;
+    margin-bottom: 0em;
+}
+.entry-content > p {
+    margin-top: 0em;
+}
+
+footer.post-info {
+    font-size: 0.9em;
 }

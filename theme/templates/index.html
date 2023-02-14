@@ -2,25 +2,33 @@
 {% block content %}
 <section id="content">
 {% block content_title %}
-<h2>All articles</h2>
+<p>
+    Hi hello hey!
+</p>
+<p>
+    This is where I write about stuff to put on the internet. Mostly because you gotta have an online presence in this day and age.
+</p>
+<p>
+    But, it's my website, my rules, and I'll write from a world where computers aren't slowly nibbling at all our collective sanity. Ain't nothin' here that's profitable or will answer to a shareholder. Just some goofy projects from a kinder world, suspended in sunlight.
+</p>
+<h2>Posts</h2>
 {% endblock %}
-
-<ol id="post-list">
+<ul id="post-list">
 {% for article in articles_page.object_list %}
         <li><article class="hentry">
                 <header> <h2 class="entry-title"><a href="{{ SITEURL }}/{{ article.url }}" rel="bookmark" title="Permalink to {{ article.title|striptags }}">{{ article.title }}</a></h2> </header>
                 <footer class="post-info">
                     <time class="published" datetime="{{ article.date.isoformat() }}"> {{ article.locale_date }} </time>
-                    <address class="vcard author">By
+                    {% if article.authors %}<address class="vcard author">By
                     {% for author in article.authors %}
                         <a class="url fn" href="{{ SITEURL }}/{{ author.url }}">{{ author }}</a>
                     {% endfor %}
-                    </address>
+                    </address>{% endif %}
                 </footer><!-- /.post-info -->
                 <div class="entry-content"> {{ article.summary }} </div><!-- /.entry-content -->
         </article></li>
 {% endfor %}
-</ol><!-- /#posts-list -->
+</ul><!-- /#posts-list -->
 {% if articles_page.has_other_pages() %}
     {% include 'pagination.html' %}
 {% endif %}

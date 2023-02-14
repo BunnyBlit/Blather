@@ -1,4 +1,5 @@
-AUTHOR = 'Blit the Bunny'
+# commented out because I'm not sure I want an author line
+# AUTHOR = 'Blit'
 SITENAME = 'Suspended in Sunlight'
 SITEURL = ''
 
@@ -16,18 +17,18 @@ AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 
 # Blogroll
-LINKS = (('Pelican', 'https://getpelican.com/'),
-         ('Python.org', 'https://www.python.org/'),
-         ('Jinja2', 'https://palletsprojects.com/p/jinja/'),
-         ('You can modify those links in your config file', '#'),)
+# This can also be N elements long, just add another pair
+LINKS = (('GitHub', 'https://github.com/dot-jpag'),)
 
 # Social widget
-SOCIAL = (('You can add links in your config file', '#'),
-          ('Another social link', '#'),)
+# This can be N elements long, just add another pair
+SOCIAL = (('Cohost', 'https://cohost.org/blit'),)
 
 THEME = "theme"
 
 DEFAULT_PAGINATION = False
 
+DISPLAY_PAGES_ON_MENU = False
+DISPLAY_CATEGORIES_ON_MENU = True
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True

@@ -36,23 +36,26 @@
 
 <body>
         <header>
-                <h1><a href="{{ SITEURL }}/">{{ SITENAME }}{% if SITESUBTITLE %} <strong>{{ SITESUBTITLE }}</strong>{% endif %}</a></h1>
+                <h1 class="site-title"><a href="{{ SITEURL }}/">{{ SITENAME }}{% if SITESUBTITLE %} <strong>{{ SITESUBTITLE }}</strong>{% endif %}</a></h1>
         </header>
-        <nav><ul>
+        <!-- This nav chunk is probably the chunk to edit to get a nice bar across ye top of all pages -->
+        <!-- Flex box something something -->
+        <!-- And maybe a search bar?-->
+        <nav class="navbar">
         {% for title, link in MENUITEMS %}
-            <li><a href="{{ link }}">{{ title }}</a></li>
+            <span><a href="{{ link }}">{{ title }}</a></span>
         {% endfor %}
         {% if DISPLAY_PAGES_ON_MENU %}
           {% for p in pages %}
-            <li{% if p == page %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ p.url }}">{{ p.title }}</a></li>
+            <span{% if p == page %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ p.url }}">{{ p.title }}</a></span>
           {% endfor %}
         {% endif %}
         {% if DISPLAY_CATEGORIES_ON_MENU %}
           {% for cat, null in categories %}
-            <li{% if cat == category %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ cat.url }}">{{ cat }}</a></li>
+            <span{% if cat == category %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ cat.url }}">{{ cat }}</a></span>
           {% endfor %}
         {% endif %}
-        </ul></nav>
+        </nav>
         <main>
         {% block content %}
         {% endblock %}
