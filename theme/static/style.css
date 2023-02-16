@@ -32,7 +32,7 @@ h6 a { color : inherit !important }
 /* Code blocks? */
 pre {
     background-color:hsl(217, 23%, 11%) ;
-    margin : 1em 1em 1em 4em ;
+    margin : 1em 4em ;
     padding: 0.5em;
     border: thin solid hsl(47,100%,83.7%);
 }
