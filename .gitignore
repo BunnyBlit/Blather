@@ -136,3 +136,6 @@ dmypy.json
 
 #Blog stuff
 /sources/
+
+#don't put your personal settings on git
+.vscode/
