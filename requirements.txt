@@ -1,1 +1,2 @@
 pelican[markdown]==4.8.0
+pygments==2.14.0

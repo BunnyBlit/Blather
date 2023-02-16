@@ -1,13 +1,15 @@
+@import "pygment.css";
+
 body {
-    font-family : Merriweather,serif;
+    font-family : "Source Serif Pro", serif;
     font-size : 1.3em ;
     background-color : hsl(216, 43.5%, 9%) ;
     color : hsl(60,73.3%,94.1%) ;
-    width : 80% ;
+    width : 75% ;
     min-width : 400px ;
     min-height : 200px ;
     padding : 1em ;
-    margin : 5%;
+    margin : 2% auto;
     border : thin solid gray ;
     border-radius : 5px ;
     display : block ;
@@ -27,16 +29,21 @@ h4 a { color : inherit !important }
 h5 a { color : inherit !important }
 h6 a { color : inherit !important }
 
+/* Code blocks? */
 pre {
-    margin : 2em 1em 2em 4em ;
+    background-color:hsl(217, 23%, 11%) ;
+    margin : 1em 1em 1em 4em ;
+    padding: 0.5em;
+    border: thin solid hsl(47,100%,83.7%);
 }
 
-blockquote {
+/* Back to normal blog stuff */
+article blockquote {
     padding: 0em 0.5em;
     border-left: 0.3em solid hsl(47,100%,83.7%);
 }
 
-p {
+article > p {
     padding: 0.5em;
 }
 
@@ -76,4 +83,12 @@ article img {
 
 footer.post-info {
     font-size: 0.9em;
+}
+
+.footnote p {
+    font-size : 0.9em ;
+    padding : 0em ;
+    padding-left: 0.5em;
+    line-height: 1.3;
+
 }
