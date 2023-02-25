@@ -6,7 +6,7 @@
     Hi hello hey!
 </p>
 <p>
-    This is where I write about stuff to put on the internet. Mostly because you gotta have an online presence in this day and age.
+    This is where I write about stuff to put on the Internet. Mostly because you gotta have an online presence in this day and age.
 </p>
 <p>
     But, it's my website, my rules, and I'll write from a world where computers aren't slowly nibbling at all our collective sanity. Ain't nothin' here that's profitable or will answer to a shareholder. Just some goofy projects from a kinder world, suspended in sunlight.
@@ -24,6 +24,17 @@
                         <a class="url fn" href="{{ SITEURL }}/{{ author.url }}">{{ author }}</a>
                     {% endfor %}
                     </address>{% endif %}
+                    {% if not category or article.category != category %}
+                    <div>
+                        In: <a class="url fn" href="{{ SITEURL }}/{{ article.category.url }}">{{ article.category }}</a>
+                    </div>
+                    {% endif %}
+                    {% if article.tags %}
+                    <div>Tags:   
+                    {% for tag in article.tags %}
+                        <a class="url fn" href="{{ SITEURL }}/{{ tag.url }}">{{ tag }}</a>{{ ", " if not loop.last else "" }}
+                    {% endfor %}
+                    </div>{% endif %}
                 </footer><!-- /.post-info -->
                 <div class="entry-content"> {{ article.summary }} </div><!-- /.entry-content -->
         </article></li>

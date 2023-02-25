@@ -1,7 +1,7 @@
 Title: Action At A Distance
 Date: 2023-02-10
 Category: Tech
-Tags: simulations, Python, How Madeline Jumps
+Tags: Simulations, Python, How Madeline Jumps
 Slug: action-at-a-distance
 Summary: A complicated way to explain game mechanics to a computer
 

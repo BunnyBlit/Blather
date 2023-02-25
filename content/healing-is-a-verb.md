@@ -1,9 +1,9 @@
 Title: Healing is a Verb
-Date: 2023-02-08
-Tags: video games, Chicory: A Colorful Tale, big feelings
+Date: 2023-02-12
+Tags: Video Games, Chicory: A Colorful Tale, Big Feelings
 Category: Non Tech
 Slug: healing-is-a-verb
-Summary: This coloring book has a lot to say about second chances.
+Summary: This coloring book has a lot to say about second chances
 
 ![Chicory the Bunny reaching down and helping Pizza the Dog]({static}/images/test_screen.gif)
 
