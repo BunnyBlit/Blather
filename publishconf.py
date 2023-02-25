@@ -10,6 +10,9 @@ from pelicanconf import *
 SITEURL = ''
 RELATIVE_URLS = False
 
+# a big chunk of this is in the Makefile, check
+# the vars there if you think something is missing here
+
 FEED_ALL_ATOM = 'feeds/all.atom.xml'
 CATEGORY_FEED_ATOM = 'feeds/{slug}.atom.xml'
 

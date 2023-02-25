@@ -8,6 +8,11 @@ OUTPUTDIR=$(BASEDIR)/output
 CONFFILE=$(BASEDIR)/pelicanconf.py
 PUBLISHCONF=$(BASEDIR)/publishconf.py
 
+SSH_HOST=192.241.195.36
+SSH_USER=root
+SSH_TARGET_DIR=/var/www/html
+SSH_IDENTITY=~/.ssh/giauzar_rsa
+
 
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
@@ -68,5 +73,7 @@ devserver-global:
 publish:
 	"$(PELICAN)" "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(PUBLISHCONF)" $(PELICANOPTS)
 
+rsync_upload:
+	rsync -e "ssh -i $(SSH_IDENTITY)" -P -rvzc --include tags --cvs-exclude --delete "$(OUTPUTDIR)"/ "$(SSH_USER)@$(SSH_HOST):$(SSH_TARGET_DIR)"
 
 .PHONY: html help clean regenerate serve serve-global devserver publish 

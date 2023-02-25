@@ -5,16 +5,12 @@ body {
     font-size : 1.3em ;
     background-color : hsl(216, 43.5%, 9%) ;
     color : hsl(60,73.3%,94.1%) ;
-    width : 75% ;
-    min-width : 400px ;
-    min-height : 200px ;
-    padding : 1em ;
-    margin : 2% auto;
     border : thin solid gray ;
     border-radius : 5px ;
     display : block ;
     line-height: 1.55;
     font-weight: normal;
+    padding: 0em 0.25em;
 }
 
 a:link    { color :  hsl(308, 100%, 83%) ; text-decoration : none ;      }
@@ -32,13 +28,14 @@ h6 a { color : inherit !important }
 /* Code blocks? */
 pre {
     background-color:hsl(217, 23%, 11%) ;
-    margin : 1em 4em ;
-    padding: 0.5em;
+    padding: 1em 0.24em;
     border: thin solid hsl(47,100%,83.7%);
+    overflow-x: scroll;
 }
 
 /* Back to normal blog stuff */
 article blockquote {
+    margin: auto 0.25em;
     padding: 0em 0.5em;
     border-left: 0.3em solid hsl(47,100%,83.7%);
 }
@@ -92,3 +89,36 @@ footer.post-info {
     line-height: 1.3;
 
 }
+
+/* Extra small devices (phones, 600px and down) */
+ /* this is the default assumption, because we want phones
+    to do the least amount of work, roughly correlating between
+    device size and processing power */
+ /* @media only screen and (max-width: 600px) {...} */
+
+ /* Small devices (portrait tablets and large phones, 600px and up) */
+ /*@media only screen and (min-width: 600px) {...} */
+ 
+ /* Medium devices (landscape tablets, 768px and up) */
+ @media only screen and (min-width: 768px) {
+    body {
+        width : 70% ;
+        padding : 1em;
+        margin : 2% auto;
+    }
+
+    pre {
+        margin : 1em ;
+        padding: 0.5em;
+    }
+
+    article blockquote {
+        margin: auto 2em;
+    }
+ }
+ 
+ /* Large devices (laptops/desktops, 992px and up) */
+ /* @media only screen and (min-width: 992px) {...} */
+ 
+ /* Extra large devices (large laptops and desktops, 1200px and up) */
+ /* @media only screen and (min-width: 1200px) {...}  */
