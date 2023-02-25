@@ -15,3 +15,5 @@ Anyway
 - - [ ] don't be weird about math notation
 - - [ ] actually go into using the model with a solver, but don't go into solving details
 - - [ ] get a solution from the bouncing ball model as an image
+- [ ] A "Hire My Ass" page
+- [ ] A "This Website Is Powered By" page listing the many, many tools I use
