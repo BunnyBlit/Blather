@@ -1,5 +1,10 @@
 @import "pygment.css";
-
+/**
+    Settings are written mobile first! I'm trying to spare a second, post CSS-query pass
+    on devices that """probably""" have the worst performance characteristics
+    Desktop / Laptop specific CSS rules are under a media query in the bottom
+*/
+/* general vibe CSS */
 body {
     font-family : "Source Serif Pro", serif;
     font-size : 1.3em ;
@@ -8,11 +13,12 @@ body {
     border : thin solid gray ;
     border-radius : 5px ;
     display : block ;
-    line-height: 1.55;
+    line-height: 1.55em;
     font-weight: normal;
-    padding: 0em 0.25em;
+    padding: 0.25em 0.5em;
 }
 
+/* hyperlink colors */
 a:link    { color :  hsl(308, 100%, 83%) ; text-decoration : none ;      }
 a:hover   { color : hsl(308,100%,83%) ; text-decoration : underline ; }
 a:visited { color : rgb(219, 168, 255) ;                               }
@@ -25,7 +31,10 @@ h4 a { color : inherit !important }
 h5 a { color : inherit !important }
 h6 a { color : inherit !important }
 
-/* Code blocks? */
+/*
+    Code blocks!
+    TODO: maybe move this as article pre ? or article > pre ?
+*/
 pre {
     background-color:hsl(217, 23%, 11%) ;
     padding: 1em 0.24em;
@@ -33,27 +42,46 @@ pre {
     overflow-x: scroll;
 }
 
-/* Back to normal blog stuff */
-article blockquote {
-    margin: auto 0.25em;
-    padding: 0em 0.5em;
-    border-left: 0.3em solid hsl(47,100%,83.7%);
+/* 
+    unordered list items. The big thing here is that my indexes are all
+    unordered lists under the hood. In general, I want less left padding that Firefox
+    seems to give me by default.
+*/
+ul {
+    padding-left: 1em
 }
 
-article > p {
-    padding: 0.5em;
-}
-
+/* navigation menus!*/
 #menu li {
     display : inline ;
 }
-
+/* id for post lists, used in indexes */
 #post-list {
     margin-bottom : 1em ;
     margin-top : 1em ;
     list-style-type: none;
 }
 
+/* block quotes! Only worried about within article styling */
+article blockquote {
+    margin: auto 0.25em;
+    padding: 0em 0.5em;
+    border-left: 0.3em solid hsl(47,100%,83.7%);
+}
+
+/*
+    slightly more padding for paragraphs in articles 
+    other stuff, like images and such, shouldn't need this
+*/
+article > p {
+    padding: 0.5em;
+}
+
+/*
+    images in articles!
+    should have the same vibe as code blocks
+    this probably means some kind of image preprocessing
+*/
 article img {
     display: block;
     margin-left: auto;
@@ -61,16 +89,44 @@ article img {
     width: 60%;
     border: thin solid hsl(47,100%,83.7%);
 }
+
+/*
+    Navbar stuff! lots of getting links to look ok
+*/
 .navbar {
     border-bottom: 0.1em solid ;
 }
 .navbar > span {
     margin: 1em;
 }
+
+/*
+    website title particular stuff
+*/
 .site-title {
+    line-height: 1.1em;
     margin: 0em;
 }
+
+/*
+    index title in particular
+*/
+.index-title {
+    line-height: 1.1em;
+}
+/*
+
+    Separator for each element in a post list
+*/
+.hentry {
+    margin-bottom: 1em;
+    border-bottom: thin solid hsl(47,100%,83.7%);
+}
+/*
+    For post lists. Title and the lil teaser sentence or so
+*/
 .entry-title {
+    line-height: 1.1em;
     margin-top: 0.5em;
     margin-bottom: 0em;
 }
@@ -78,10 +134,13 @@ article img {
     margin-top: 0em;
 }
 
+/*
+    Footer! Give a shoutout to Pelican, Apache, Python and Pygments--
+    the things powering this here blogzone.
+*/
 footer.post-info {
     font-size: 0.9em;
 }
-
 .footnote p {
     font-size : 0.9em ;
     padding : 0em ;
@@ -90,8 +149,15 @@ footer.post-info {
 
 }
 
-/* Extra small devices (phones, 600px and down) */
- /* this is the default assumption, because we want phones
+/*
+    Specialized CSS for non-cellphone screens!
+    This isn't perfect-- in a world suspended in sunlight, I'd deliver custom CSS to
+    you based on your UA / device you're willing to identify that you're using.
+    Throw a big TODO on that.
+*/
+/*
+    Extra small devices (phones, 600px and down)
+    this is the default assumption, because we want phones
     to do the least amount of work, roughly correlating between
     device size and processing power */
  /* @media only screen and (max-width: 600px) {...} */
@@ -112,6 +178,9 @@ footer.post-info {
         padding: 0.5em;
     }
 
+    ul {
+        padding-left: 3em;
+    }
     article blockquote {
         margin: auto 2em;
     }
