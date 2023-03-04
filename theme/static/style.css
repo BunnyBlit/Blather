@@ -86,9 +86,14 @@ article img {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 60%;
-    border: thin solid hsl(47,100%,83.7%);
+    width: 100%;
+    /*border: thin solid hsl(47, 100%, 84%);*/
+    /*box-shadow: 1em hsl(47,100%,83.7%);*/
 }
+
+:has(img) {
+    padding: 1em;
+ }
 
 /*
     Navbar stuff! lots of getting links to look ok
@@ -183,6 +188,9 @@ footer.post-info {
     }
     article blockquote {
         margin: auto 2em;
+    }
+    article img {
+        width: 60%
     }
  }
  
