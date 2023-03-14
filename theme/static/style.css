@@ -91,10 +91,6 @@ article img {
     /*box-shadow: 1em hsl(47,100%,83.7%);*/
 }
 
-:has(img) {
-    padding: 1em;
- }
-
 /*
     Navbar stuff! lots of getting links to look ok
 */
@@ -153,7 +149,10 @@ footer.post-info {
     line-height: 1.3;
 
 }
-
+footer .body { 
+    font-size: 0.8em;
+    line-height: 1.3;
+}
 /*
     Specialized CSS for non-cellphone screens!
     This isn't perfect-- in a world suspended in sunlight, I'd deliver custom CSS to

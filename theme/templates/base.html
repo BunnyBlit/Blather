@@ -45,14 +45,14 @@
         {% for title, link in MENUITEMS %}
             <span><a href="{{ link }}">{{ title }}</a></span>
         {% endfor %}
-        {% if DISPLAY_PAGES_ON_MENU %}
-          {% for p in pages %}
-            <span{% if p == page %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ p.url }}">{{ p.title }}</a></span>
-          {% endfor %}
-        {% endif %}
         {% if DISPLAY_CATEGORIES_ON_MENU %}
           {% for cat, null in categories %}
             <span{% if cat == category %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ cat.url }}">{{ cat }}</a></span>
+          {% endfor %}
+        {% endif %}
+        {% if DISPLAY_PAGES_ON_MENU %}
+          {% for p in pages %}
+            <span{% if p == page %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ p.url }}">{{ p.title }}</a></span>
           {% endfor %}
         {% endif %}
         </nav>
