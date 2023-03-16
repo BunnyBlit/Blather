@@ -7,7 +7,7 @@ sys.path.append(os.curdir)
 from pelicanconf import *
 
 # If your site is available via HTTPS, make sure SITEURL begins with https://
-SITEURL = ''
+SITEURL = 'https://suspendedsunlight.dev'
 RELATIVE_URLS = False
 
 # a big chunk of this is in the Makefile, check
