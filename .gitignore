@@ -139,3 +139,6 @@ dmypy.json
 
 #don't put your personal settings on git
 .vscode/
+
+#don't put OSX stuff on git
+.DS_Store

@@ -49,14 +49,12 @@ So, when does a bouncing ball jump? It starts by falling-- seems pretty continuo
 What might that look like in code? Lets also throw in a constant [restitution coefficient](https://en.wikipedia.org/wiki/Coefficient_of_restitution), so we can lose some energy as we bounce to make it feel a little more real. 
 ```python
 def jump(state:State) -> State:
-    new_state:State = state.copy() # I am not thinking about copy semantics of psudocode
-                                   # but this could just be "get a pointer to" and not a deep copy
     # reduce the velocity by multiplying it by a less-than-one restitution coefficient
     # flip the direction by also multiplying by a negative one.
     # the restitution coefficient is 0.5 here
-    new_state.vel = -0.5 * state.y_vel
+    state.y_vel = -0.5 * state.y_vel
     # return!
-    return new_state
+    return state
 ```
 
 "Woah, slow down there cowboy," you say, in my head. "How does the computer know when to trigger a jump?"
@@ -117,7 +115,7 @@ Because a `flow` is a function that takes in a state and returns a derivative, i
 
 This post isn't going to go into writing your own ODE Solver[^4]. I just used `scipy`'s off the shelf one. I need to tweak the model a little bit-- before we could just say our functions returned whatever, but now they need to work with a third party solver. [The documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) says that (paraphrasing):  
 
-The `flow` function must only have two parameters: `t`: a floating point number for time and `y` and "array_like" where each element correspond to state property. Also, the function needs to return an "array_like" of the same size as `y` where each element is `y[element]`'s derivative. Fine.  
+> The ODE function must only have two parameters: `t`, a floating point number for time and `y`, and "array_like" where each element correspond to state property. Also, the function needs to return an "array_like" of the same size as `y` where each element is `y[element]`'s derivative. Fine.  
 ```python
 def flow(time: float, state: Tuple[float]) -> Tuple[float]
     # we'll say that state[0] is position and state[1] is velocity
@@ -137,10 +135,10 @@ ode_sol = integrate.solve_ivp(
 )
 if ode_sol.status == -1:
     return f"Oh, no, solver failed! {ode_sol.message}"
-for time, state_values in zip(ode_sol.t, ode_sol.y.T):
+for time, state in zip(ode_sol.t, ode_sol.y.T):
     # doing a little data translation (get the transpose [T] of the y values [read as state])
     # pair them with a similarly lengthed iterable, t aka times, using zip(...)
-    print(f"State at {time}: {state_values}")
+    print(f"State at {time}: {state}")
 ```
 [^4]: I kinda want to get into the weeds of ODE solution methods, at least the simple ones that work for this example and Flappy Bird. Maybe look forward too it if you bug me about it enough [on cohost](https://cohost.org/blit)!
 
@@ -177,12 +175,12 @@ def solve_ball_system(flow, flow_check, jump, jump_check):
             if ode_sol.status == -1:
                 print(f"Solver failed with message: {ode_sol.message}")
                 return solution
-            for time, state_values in zip(ode_sol.t, ode_sol.y.T):
-                solution.append((time, state_values))
+            for time, state in zip(ode_sol.t, ode_sol.y.T):
+                solution.append((time, state))
 
             cur_time, cur_state = solution[-1]
     
-        if (jump_check(cur_time, cur_state, n_jumps) == 1):
+        if (jump_check(cur_time, cur_state) == 1):
             cur_state = jump(cur_time, cur_state)
             n_jumps += 1
     return solution
@@ -192,6 +190,8 @@ And hey, you know, _you can make a graph out of this_:
 
 ![Two graphs detailing the ball model we've been talking about. The top one is hight over time, showing smooth bounce arcs. Each arc is colored based on the jump that caused it. The bottom is a bunch of discontinuous slashes, showing the ball's velocity over time. Also colored by which jump caused it]({static}/images/better_ball_picture.png)
 
-This is, more or less, the core loop of the [Hybrid Dynamic System solver I wrote](https://github.com/dot-jpag/PyHyEQGameSim). There's some tricks to make the zero crossing thing faster, a lot of bookkeeping to get some abstractions so I don't need to work with raw tuples and remember which position was `velocity`, and a lot of additional logic to handle player input.
+This is, more or less, the core loop of the [Hybrid Dynamic System solver I wrote](https://github.com/dot-jpag/PyHyEQGameSim). There's some tricks to make the zero crossing thing faster, and a lot of bookkeeping to get some abstractions so I don't need to work with raw tuples and remember which position was `velocity`.
 
-That "lot of logic to handle player input" is worth its own post, so if this was interesting, stick around!
+There is one big bummer though: we had a nice `State` dataclass and lost it to work with `scipy`. What if we could get it back?
+
+Ok, so bouncing balls are fun and all, but what about [flapping birds](https://www.rollingstone.com/culture/culture-news/the-flight-of-the-birdman-flappy-bird-creator-dong-nguyen-speaks-out-112457/)?

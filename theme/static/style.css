@@ -42,6 +42,14 @@ pre {
     overflow-x: scroll;
 }
 
+/*
+    Referencing "code" as a style thing for a few words
+ */
+ p > code {
+    font-family: 'Courier New', Courier, monospace;
+    background-color:hsl(217, 23%, 11%);
+    color: hsl(208, 26%, 87%);
+ }
 /* 
     unordered list items. The big thing here is that my indexes are all
     unordered lists under the hood. In general, I want less left padding that Firefox
