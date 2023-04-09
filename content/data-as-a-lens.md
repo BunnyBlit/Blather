@@ -29,9 +29,7 @@ Can we do better? And along the way, can we go from Python-ish near code to some
 
 Data structures is very little more than the art of applying some labels to memory. Label some memory the right way, and then you can quickly access elements of that memory [without needing to search around for what you want](https://en.wikipedia.org/wiki/Hash_table). We want to label things that make it easy for the computer: this speeds up our programs.
 
-But, also, we want to label stuff so its easy for the person working with the computer. In fact, sometimes, its better for the labels to be decipherable than the program fast.
-
-Setting up the page like this, its easy to make it sound like, "oh, well, you need to sacrifice speed for readability!"
+But, also, we want to label stuff so its easy for the person working with the computer. Most of the time, its better for the labels to be decipherable than the program fast. Setting up the article like this, its easy to make it sound like, "oh, well, you need to sacrifice speed for readability!"
 
 [The rustaceans teach us: you (mostly) do not](https://doc.rust-lang.org/beta/embedded-book/static-guarantees/zero-cost-abstractions.html). The dichotomy is false. We can have our cake and eat it too. People work very hard to compile our code to be fast for the computer, so we can write it for our fellow people. When we hit something annoying like needing to remember the order of arguments in a `tuple`, it's time to grab a new lens and look at the world a little differently.
 
@@ -43,7 +41,7 @@ I want to focus on how state is going to be used. When we last looked at this sy
 
 ```python
 # when we last looked at these functions, I had converted
-# state to a tuple. Let's pull back to having them be a state again.
+# state to a tuple. Let's pull back to having them be a class again.
 
 def jump(time:float, state:State) -> State:
     state.y_vel = -0.5 * state.y_vel
@@ -110,7 +108,7 @@ And then everyone's happy. Wrap up the blog post, lets go home.
 
 Well,
 
-The computer might not be happy. It's a bit of a bummer that we need to make an entire new `list` every time we call the solver to solve for another chunk of flow. What we really want is a *lens*: sometimes we view the data like properties of a class, other times we view the data like a list.
+It's a bit of a bummer that we need to make an entire new `list` every time we call the solver to solve for another chunk of flow. We call `solve_ivp` _a lot_. What we really want is a *lens*: sometimes we view the data like properties of a class, other times we view the data like a list.
 
 ### Protocols
 

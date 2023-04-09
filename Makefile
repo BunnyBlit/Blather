@@ -8,12 +8,12 @@ OUTPUTDIR=$(BASEDIR)/output
 CONFFILE=$(BASEDIR)/pelicanconf.py
 PUBLISHCONF=$(BASEDIR)/publishconf.py
 
-SSH_HOST=192.241.195.36
+SSH_HOST=suspendedsunlight.dev
 # It's Pix! They're my sprite friend to handle moving stuff around.
 SSH_USER=pix
 SSH_TARGET_DIR=/var/www/html
-# lol, I 100% do not have a backup if I lose this file so that should be fun someday
-SSH_IDENTITY=~/.ssh/giauzar_rsa
+# I have a backup now :)
+SSH_IDENTITY=$(BLOG_PUBLISH_KEY_FILE)
 
 
 DEBUG ?= 0
