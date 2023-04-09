@@ -142,3 +142,6 @@ dmypy.json
 
 #don't put OSX stuff on git
 .DS_Store
+
+#don't leak secrets
+.envrc
