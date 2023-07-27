@@ -4,6 +4,7 @@ Category: Tech
 Tags: Simulations, Python
 Slug: modeling-flappy-bird
 Summary: If we can model a [bouncing ball]({filename}/bouncing-balls.md), what about a flapping bird?
+Status: draft
 
 [Previously]({filename}/bouncing-balls.md), I wrote a lot about [Hybrid Dynamic Systems]({https://dl.acm.org/doi/pdf/10.1145/3337722.3337757}) and simulating a simple bouncing ball.
 
@@ -41,7 +42,7 @@ class FlappyState():
 
 Rad.
 
-Well, wait. I'm forgetting something: I'll eventually need to pass this state to an ODE Solver, and it needs state as an "array_like". This is not an "array_like". Trying to find a good definition of what an "array_like" is
+Well, wait. I'm forgetting something: I'll eventually need to pass this state to an ODE Solver, and it needs state as an `array_like`. This is not an `array_like`.
 
 What if we just write down how to turn this into an array?
 

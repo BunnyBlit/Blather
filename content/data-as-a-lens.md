@@ -4,6 +4,7 @@ Category: Tech
 Tags: Simulations, Python, Data Structures
 Slug: data-as-a-lens
 Summary: Organizing data to make it easy to remember
+Status: draft
 
 ([With some apologies to Stacey Mason](https://cerebralarcade.com/2015/08/29/lenses-not-boxes/))
 
@@ -23,13 +24,15 @@ Boo.
 
 I want nice abstractions. I want the code to be readable by people, not computers. I want you, dear reader, do need to hold as little information about the system in your head at a time.
 
-Can we do better? And along the way, can we go from Python-ish near code to something that runs and we're happy to maintain?
+Can we do better?
 
 ### Lenses, not Fences
 
 Data structures is very little more than the art of applying some labels to memory. Label some memory the right way, and then you can quickly access elements of that memory [without needing to search around for what you want](https://en.wikipedia.org/wiki/Hash_table). We want to label things that make it easy for the computer: this speeds up our programs.
 
-But, also, we want to label stuff so its easy for the person working with the computer. Most of the time, its better for the labels to be decipherable than the program fast. Setting up the article like this, its easy to make it sound like, "oh, well, you need to sacrifice speed for readability!"
+But, also, we want to label stuff so its easy for the person working with the computer. Most of the time, its better for the labels to be decipherable than the program fast [^1]. Setting up the article like this, its easy to make it sound like, "oh, well, you need to sacrifice speed for readability!"
+
+[^1]: to a point, obviously. Like all things, this isn't a hard and fast rule, just a tradeoff between execution speed, program size, and future you's happiness.
 
 [The rustaceans teach us: you (mostly) do not](https://doc.rust-lang.org/beta/embedded-book/static-guarantees/zero-cost-abstractions.html). The dichotomy is false. We can have our cake and eat it too. People work very hard to compile our code to be fast for the computer, so we can write it for our fellow people. When we hit something annoying like needing to remember the order of arguments in a `tuple`, it's time to grab a new lens and look at the world a little differently.
 
@@ -114,7 +117,7 @@ It's a bit of a bummer that we need to make an entire new `list` every time we c
 
 In Python, the way we look at data is mostly just trying to do stuff to it-- if we access it like `data[0]`, and nothing crashes, well then, it must be a thing that supports access by a key (the key is the number 0). [Duck typing](https://en.wikipedia.org/wiki/Duck_typing) is kinda a chaotic gremlin-- you just gotta try and see what happens.
 
-It's also a little rough for our tools: my IDE can't check me if it also doesn't know if something will succeed or fail until we do it.
+It's also a little rough for our tools: my IDE can't check me while I write if it also doesn't know if something will succeed or fail until we do it.
 
 [Protocols](https://peps.python.org/pep-0544/) are a way to announce, beforehand, that you support certain ways of being interacted with. If we want our `State` class to announce, "hey, I can be interacted with like a list-ish thing called a [Sequence](https://docs.python.org/3/glossary.html#term-sequence)", we extend the [Sequence abstract class](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence) and promise that this means we'll behave and follow the `Sequence` protocol. If we look at which methods aren't implemented for us when we inherent from `Sequence`, we can see what the protocol asks us to implement: `__len__` and `__getitem__`.
 

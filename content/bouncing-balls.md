@@ -4,6 +4,7 @@ Category: Tech
 Tags: Simulations, Python
 Slug: guesswork-bouncing-balls
 Summary: A complicated way to explain game mechanics to a computer
+Status: draft
 
 Games are complicated.
 
@@ -23,7 +24,7 @@ I'm a "learn by doing" kind of person; I wanted to try and implement one to find
 
 The core concept here is that we can break a system (read as: game) into two parts:  
 
-1. **The continuous part**: this part is things like jump arcs, car drifting, and starship thrust. These parts of the game change continuously while they're happening, and are probably handled by a physics engine. When a game is operating this way, it's _flowing_, and these changes are called _flows_.  
+1. **The continuous part**: this part is things like jump arcs, car drifting, and starship thrust. These parts of the game change continuously while they're happening, and are often handled by a physics engine. When a game is operating this way, it's _flowing_, and these changes are called _flows_.  
 
 2. **The discrete part**: this part is sudden, sharp changes in a game, switching from one mode to another. Characters are very often modeled as a collection of sharp switches-- you're not punching, you hit the punch button, and then suddenly you are! When a game is operating this way, it's _jumping_, and these changes are called _jumps_.
 
@@ -31,11 +32,12 @@ It's then just a uh, simple, question of modeling all the flows, modeling all th
 
 ### Let's start with something more simple than Pong
 
-The proverbial first example with Hybrid Dynamic Systems is a bouncing ball. To start, I need the ball's state, which changes over time. To keep this very simple, I won't even model horizontal position: let's only care about vertical position. And, since I want to change vertical position over time, vertical velocity[^1].
+The proverbial first example with Hybrid Dynamic Systems is a bouncing ball. To start, I need the ball's state, which changes over time. To keep this very simple, I won't even model horizontal position (left / right): let's only care about vertical position (up / down). And, since I want to change vertical position over time, vertical velocity[^1].
 
 [^1]: using `y` as my vertical axis, rather than `z`. This is [A Thing](https://forums.autodesk.com/t5/fusion-360-manufacture/why-is-y-up-instead-of-z-by-default/td-p/7226258), and something I didn't think to hard about-- I can always refactor this to `z` later. If you're much happier with `y` as your depth axis, go for it.
 
 ```python
+from dataclasses import dataclass
 @dataclass
 class State:
     y_pos: float # vertical position
