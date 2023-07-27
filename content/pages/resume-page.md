@@ -15,6 +15,6 @@ We both know, recruiter reading this, that "make computer do" is only the tip of
 
 In non-day job news, well, that's the rest of this blog! I'm very interested in tools engineering for games. I'd love to work on authoring interfaces, design tools, and really any technical work that gets close to the meat and bone of a game.
 
-[Resume]()  
-[Really Old CV]()  
-[LinkedIn](https://www.linkedin.com/in/johnathan-pagnutti-2a3346107/)  
+<s>[Resume]()</s>   
+<s>[Really Old CV]()</s>    
+[LinkedIn](https://www.linkedin.com/in/johnathan-pagnutti-2a3346107/)
