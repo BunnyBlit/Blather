@@ -84,9 +84,10 @@ I know. This feels like I'm pranking you. I'm not trying to. Sometimes, its just
 
 Now, to actually calculate flows... well, we're not gonna do it by hand. Remember that a flows are an ever changing, ever evolving thing over time, and math has a tool for that: a derivative. Our flow needs to be a function that takes in our state and returns that state's derivative with respect to time.
 
-I know, calculus! Spooky. But, we can do this: the derivative of position is the velocity, right? Velocity describes how position changes over time. The derivative of velocity is acceleration... which we'll pretend is a [negative constant](https://en.wikipedia.org/wiki/Gravitational_acceleration) of 9.81.
+Ok, so, the derivative of position is the velocity, right? Velocity describes how position changes over time. The derivative of velocity is acceleration... which we'll pretend is a [negative constant](https://en.wikipedia.org/wiki/Gravitational_acceleration) thanks to gravity of 9.81.
 
 ```python
+from dataclasses import dataclass
 @dataclass
 class Derivative:
     derivative_position: float
@@ -97,6 +98,8 @@ def flow(state:State) -> Derivative:
         derivative_position=state.y_vel,
         derivative_velocity=-9.81
     )
+
+
 ```
 
 So we have a little system! Four equations that all have the following calling signatures:

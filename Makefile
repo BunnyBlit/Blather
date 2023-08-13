@@ -75,7 +75,7 @@ devserver-global:
 publish:
 	"$(PELICAN)" "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(PUBLISHCONF)" $(PELICANOPTS)
 
-rsync_upload:
+rsync-upload:
 	rsync -e "ssh -i $(SSH_IDENTITY)" -P -rvzc --include tags --cvs-exclude --delete "$(OUTPUTDIR)"/ "$(SSH_USER)@$(SSH_HOST):$(SSH_TARGET_DIR)"
 
 .PHONY: html help clean regenerate serve serve-global devserver publish 
