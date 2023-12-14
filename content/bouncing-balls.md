@@ -1,16 +1,15 @@
-Title: Taking the Guesswork out of Bouncing Balls
-Date: 2023-02-10
-Category: Tech
-Tags: Simulations, Python
-Slug: guesswork-bouncing-balls
-Summary: A complicated way to explain game mechanics to a computer
-Status: draft
+Title: Taking the Guesswork out of Bouncing Balls   
+Date: 2023-02-10   
+Category: Tech   
+Tags: Simulations, Python   
+Slug: guesswork-bouncing-balls   
+Summary: A complicated way to explain how balls bounce to a computer      
 
 Games are complicated.
 
 They have a lot of stuff you can do! You can [click on things](http://orteil.dashnet.org/cookieclicker/), [crash space ships](https://www.kerbalspaceprogram.com/), [play pinball](https://blogs.windows.com/windowsexperience/2015/10/09/pinball-fx2-windows-10-edition-is-now-available/) or even [bounce a ball back and forth](https://www.ponggame.org/).
 
-Rarely-- and it is a cursed moment when it happens-- I'm called on to design some part of a game. This is really hard because [game design is extremely difficult](https://www.gamedeveloper.com/design/-quot-the-door-problem-quot-of-game-design). But, also, because I am bad at video games. I tune everything to be way too easy, because _I_ have to be the first play tester, and I tend to tune stuff that _I_ find fun.
+Rarely-- and it is a cursed moment when it happens-- I'm called on to design some part of a game. This is really hard because [game design is extremely difficult](https://www.gamedeveloper.com/design/-quot-the-door-problem-quot-of-game-design). But, also, because I am bad at video games. I tune everything to be way too easy, because I have to be the first play tester, and I tend to tune stuff that I find fun.
 
 I was in the middle of one of these struggles when I saw a presentation of Yegeta Zeleke's paper on [analyzing and modeling action games](https://dl.acm.org/doi/pdf/10.1145/3337722.3337757). I didn't really understand the presentation at the time, but I couldn't stop thinking about it. Fast forward years later, and here we are.
 
@@ -24,7 +23,7 @@ I'm a "learn by doing" kind of person; I wanted to try and implement one to find
 
 The core concept here is that we can break a system (read as: game) into two parts:  
 
-1. **The continuous part**: this part is things like jump arcs, car drifting, and starship thrust. These parts of the game change continuously while they're happening, and are often handled by a physics engine. When a game is operating this way, it's _flowing_, and these changes are called _flows_.  
+1. **The continuous part**: this part is things like jump arcs, amount of power produced by a power plant in an RTS, car drifting, and starship thrust. These parts of the game change continuously while they're happening, and are often handled by a physics engine. When a game is operating this way, it's _flowing_, and these changes are called _flows_.  
 
 2. **The discrete part**: this part is sudden, sharp changes in a game, switching from one mode to another. Characters are very often modeled as a collection of sharp switches-- you're not punching, you hit the punch button, and then suddenly you are! When a game is operating this way, it's _jumping_, and these changes are called _jumps_.
 
@@ -36,19 +35,26 @@ The proverbial first example with Hybrid Dynamic Systems is a bouncing ball. To 
 
 [^1]: using `y` as my vertical axis, rather than `z`. This is [A Thing](https://forums.autodesk.com/t5/fusion-360-manufacture/why-is-y-up-instead-of-z-by-default/td-p/7226258), and something I didn't think to hard about-- I can always refactor this to `z` later. If you're much happier with `y` as your depth axis, go for it.
 
+
 ```python
 from dataclasses import dataclass
 @dataclass
 class State:
     y_pos: float # vertical position
     y_vel: float # vertical velocity
+
+state = State(y_pos=1.0, y_vel=1.0)
+print(state)
 ```
 
-So, when does a bouncing ball jump? It starts by falling-- seems pretty continuous-- then hits the ground, then suddenly springs back up. That contact with the ground is a jump, a sudden switch in state. The ball's velocity was going down, now in a instant, it's going up![^2]
+    State(y_pos=1.0, y_vel=1.0)
 
-[^2]: I know almost no physics, but I'm sure that in reality, this is all a continuous system and there are some Adult equations to calculate how potential energy gets... released? as the ball springs up. Whatever, close enough.
 
-What might that look like in code? Lets also throw in a constant [restitution coefficient](https://en.wikipedia.org/wiki/Coefficient_of_restitution), so we can lose some energy as we bounce to make it feel a little more real. 
+So, when does a bouncing ball jump? It starts by falling-- seems pretty continuous-- then hits the ground, then suddenly springs back up. That contact with the ground is a jump, a sudden switch in state. The ball's velocity was going down, now in a instant, it's going up!
+
+What might that look like in code? Lets also throw in a constant [restitution coefficient](https://en.wikipedia.org/wiki/Coefficient_of_restitution), so we can lose some energy as we bounce to make it feel a little more real.
+
+
 ```python
 def jump(state:State) -> State:
     # reduce the velocity by multiplying it by a less-than-one restitution coefficient
@@ -57,13 +63,26 @@ def jump(state:State) -> State:
     state.y_vel = -0.5 * state.y_vel
     # return!
     return state
+
+state = State(y_pos=1.0, y_vel=1.0)
+# Python's pass by reference here so I really don't need this assignment
+# but I think it helps illustrate what's happening
+print(f"Before jumping:\t{state}") # actually the old state
+state = jump(state)
+print(f"After jumping:\t{state}")
 ```
+
+    Before jumping:	State(y_pos=1.0, y_vel=1.0)
+    After jumping:	State(y_pos=1.0, y_vel=-0.5)
+
 
 "Woah, slow down there cowboy," you say, in my head. "How does the computer know when to trigger a jump?"
 
-Ah! Right. If we flip the velocity before we hit the ground, we'll just go more up. That's not how gravity works. The gamers would be very mad at our lack of attention to realism in Ball Sim 2023[^3]. Well, we can just use another function to tell us if we should jump or not, call it uh, 
+Ah! Right. If we flip the velocity before we hit the ground, we'll just go more up. That's not how gravity works. The gamers would be very mad at our lack of attention to realism in Ball Sim 2023[^2]. Well, we can just use another function to tell us if we should jump or not, call it uh, 
 
-[^3]: Gonna need to workshop this title 
+[^2]: Gonna need to workshop this title
+
+
 ```python
 def jump_check(state:State) -> bool:
     if state.y_pos <= 0 and state.y_vel < 0:
@@ -74,108 +93,324 @@ def jump_check(state:State) -> bool:
     else:
         # otherwise keep flowing
         return False
+
+air_state = State(y_pos=1.0, y_vel=-1)
+print(f"Jump from {air_state}?\t{jump_check(air_state)}")
+ground_state = State(y_pos=0.0, y_vel=-1)
+print(f"Jump from {ground_state}?\t{jump_check(ground_state)}")
+below_ground_state = State(y_pos=-0.5, y_vel=-1)
+print(f"Jump from {below_ground_state}?\t{jump_check(below_ground_state)}")
 ```
+
+    Jump from State(y_pos=1.0, y_vel=-1)?	False
+    Jump from State(y_pos=0.0, y_vel=-1)?	True
+    Jump from State(y_pos=-0.5, y_vel=-1)?	True
+
+
 That covers jumps-- there's a function, `jump` to say "this is how we do the instantaneous state change" and another function `jump_check` that says "it's time to jump". Flows are similar! There's a function to run to say how we're flowing (`flow`), and a function to say if we should be flowing or not (`flow_check`). The... well, the check function gets a little silly with our ball example:
+
+
 ```python
 def flow_check(state: State) -> bool:
+    """This one is a little silly, I know"""
     return True
+
+air_state = State(y_pos=1.0, y_vel=-1)
+print(f"Flow from {air_state}?\t{flow_check(air_state)}")
+ground_state = State(y_pos=0.0, y_vel=-1)
+print(f"Flow from {ground_state}?\t{flow_check(ground_state)}")
+below_ground_state = State(y_pos=-0.5, y_vel=-1)
+print(f"Flow from {below_ground_state}?\t{flow_check(below_ground_state)}")
 ```
-I know. This feels like I'm pranking you. I'm not trying to. Sometimes, its just like this. Our system is so simple that it's _always_ flowing. Sure, it jumps sometimes, but that happens in a single instant, and gravity never stops, so. There are times in video games when we want to stop applying constant forces ([coyote time](https://gamerant.com/celeste-coyote-time-mechanic-platforming-impact-hidden-mechanics/)), so this is less silly later. 
+
+    Flow from State(y_pos=1.0, y_vel=-1)?	True
+    Flow from State(y_pos=0.0, y_vel=-1)?	True
+    Flow from State(y_pos=-0.5, y_vel=-1)?	True
+
+
+I know. This feels like I'm pranking you. I'm not trying to. Sometimes, its just like this. Our system is so simple that it's _always_ flowing. Sure, it jumps sometimes, but that happens in a single instant, and gravity never stops, so. There are times in video games when we want to stop applying constant forces ([coyote time](https://gamerant.com/celeste-coyote-time-mechanic-platforming-impact-hidden-mechanics/)), so this is less silly in real life.
 
 Now, to actually calculate flows... well, we're not gonna do it by hand. Remember that a flows are an ever changing, ever evolving thing over time, and math has a tool for that: a derivative. Our flow needs to be a function that takes in our state and returns that state's derivative with respect to time.
 
 Ok, so, the derivative of position is the velocity, right? Velocity describes how position changes over time. The derivative of velocity is acceleration... which we'll pretend is a [negative constant](https://en.wikipedia.org/wiki/Gravitational_acceleration) thanks to gravity of 9.81.
 
+
 ```python
 from dataclasses import dataclass
 @dataclass
-class Derivative:
+class StateDerivative:
+    """ Using a separate data class to help identify when my data is a state
+        and when it's the derivative of a state.
+    """
     derivative_position: float
     derivative_velocity: float
  
-def flow(state:State) -> Derivative:
-    return Derivative(
+def flow(state:State) -> StateDerivative:
+    """The derivative of position is velocity.
+       The derivative of velocity is going to be negative acceleration from gravity
+    """
+    return StateDerivative(
         derivative_position=state.y_vel,
         derivative_velocity=-9.81
     )
 
-
+state = State(y_pos=1.0, y_vel=1.0)
+state_derivative = flow(state)
+print(f"{state} flows over time\naccording to {state_derivative}")
 ```
+
+    State(y_pos=1.0, y_vel=1.0) flows over time
+    according to StateDerivative(derivative_position=1.0, derivative_velocity=-9.81)
+
 
 So we have a little system! Four equations that all have the following calling signatures:
+
+
 ```python
-def flow(state: State) -> Derivative: #...
-def flow_check(state: State) -> bool: #...
-def jump(state: State) -> State: #...
-def jump_check(state: State) -> bool: #...
+import inspect # inspect is a standard library that lets us inspect our code at run time.
+               # there's a whole aside here about reflection and self-modifying code
+print(f"Flow signature: {inspect.signature(flow)}")
+print(f"Flow check signature: {inspect.signature(flow_check)}")
+print(f"Jump signature: {inspect.signature(jump)}")
+print(f"Jump check signature: {inspect.signature(jump_check)}")
 ```
 
-Tada! That's a model baybee. You heard it here first folks, all action games are just four functions.
+    Flow signature: (state: __main__.State) -> __main__.StateDerivative
+    Flow check signature: (state: __main__.State) -> bool
+    Jump signature: (state: __main__.State) -> __main__.State
+    Jump check signature: (state: __main__.State) -> bool
+
+
+Ok, so `__main__` might be weird there for you, but hey it's our functions![^3] Tada! That's a model baybee. You heard it here first folks, all action games are just four functions.
+
+[^3]: `__main__` is the "main" Python module, and the global namespace. When we write bare functions or classes, like say in a notebook or REPL, they live here. Otherwise, they live in the module you say they live in, which is typically the file you wrote them in [^4]
+
+[^4]: it is [more complicated than this](https://docs.python.org/3.11/tutorial/modules.html). Don't @ me.
 
 ### Simulations are how we get useful stuff from models
 
-But uh, how do we use these four equations? We want to simulate the model for a given start state. We can actually do this analytically, no machine learning or complicated statistics required here! Because we're coming up with simulation results deterministically, its sometimes said that we "solve" the model.
+But uh, how do we use these four equations? We want to simulate the model for a given start state. We can do this analytically, no machine learning or evolutionary algorithms here! Because we're coming up with simulation results deterministically, its sometimes said that we "solve" the model.
 
-Because a `flow` is a function that takes in a state and returns a derivative, it falls under a class known as an Ordinary Differential Equation, or ODE. This is a fairly dense branch of mathematics, but there exist methods to solve for ODEs! If you give an ODE Solver a function like `flow`, a start time, a start state and some constraints like "solve until `end_time`", you can get the states (along with times) for a `flow` from the start time to end time. This is called the "initial value problem" (IVP).
+Because a `flow` is a function that takes in a state and returns a derivative with respect to a single variable, time, it falls under a class known as an Ordinary Differential Equation, or ODE. This is a well known branch of mathematics, and there exist methods to solve for ODEs! If you give an ODE Solver a function like `flow`, a start time, a start state and some constraints like "solve until `end_time`", you can get the states (along with times) for a `flow` from the start time to end time. This is called the "initial value problem" (IVP).
 
-This post isn't going to go into writing your own ODE Solver[^4]. I just used `scipy`'s off the shelf one. I need to tweak the model a little bit-- before we could just say our functions returned whatever, but now they need to work with a third party solver. [The documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) says that (paraphrasing):  
+This post isn't going to go into writing your own ODE Solver[^5]. I just used `scipy`'s off the shelf one. I need to tweak the model a little bit. [The documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) says that (paraphrasing):  
 
-> The ODE function must only have two parameters: `t`, a floating point number for time and `y`, and "array_like" where each element correspond to state property. Also, the function needs to return an "array_like" of the same size as `y` where each element is `y[element]`'s derivative. Fine.  
+> The ODE function must only have two parameters: `t`, a floating point number for time and `y`, and "array_like" where each element correspond to state property. Also, the function needs to return an "array_like" of the same size as `y` where each element is `y[element]`'s derivative.
+
+Fine.
+
+[^5]: Future Blit here-- I will eventually need to get into the weeds of writing my own ODE Solver, because the off-the-shelf ones don't have the features I will eventually need.
+
+
 ```python
-def flow(time: float, state: Tuple[float]) -> Tuple[float]
+from typing import Tuple
+from collections import namedtuple
+
+# named tuples are tuples, but I can refer to each position by name-- they're almost exactly like the dataclasses
+# from before
+# this won't perfectly work, because all this information is gonna get stripped by the time we get to the
+# flow function but it at least makes the constructor a little nicer
+State = namedtuple('State', ['y_pos', 'y_vel'])
+StateDerivative = namedtuple('StateDerivative', ['derivative_position', 'derivative_velocity'])
+
+def flow(time: float, state: Tuple[float, float]) -> Tuple[float, float]:
     # we'll say that state[0] is position and state[1] is velocity
-    return tuple([
-        state[1], # remember the derivative of position is velocity, so the derivative of state[0] is state[1]. Not the most intuitive
-        -9.81
-    ])
+    return StateDerivative(
+         # remember the derivative of position is velocity, so the derivative of state[0] is state[1].
+         # Not the most intuitive
+        derivative_position=state[1],
+        derivative_velocity=-9.81
+    )
+
+state = State(y_pos=1.0, y_vel=1.0)
+state_derivative = flow(0.0, state) # the exact time doesn't matter yet, but we'll need it in a second
+print(f"{state} flows over time\naccording to {state_derivative}")
 ```
-Then to use this thing:
+
+    State(y_pos=1.0, y_vel=1.0) flows over time
+    according to StateDerivative(derivative_position=1.0, derivative_velocity=-9.81)
+
+
+And then to use this thing:
+
+
 ```python
+from scipy import integrate
+# we need to provide a start time, an end time and a state to start from
+cur_state = State(y_pos=2.0, y_vel=0.0) # two, uh, units off the ground, no starting velocity seems ok
+cur_time = 0.0 # start at the start
+end_time = 1.0 # and we'll go for uh. one. uh. time unit
+
+# the good stuff
 ode_sol = integrate.solve_ivp(
     flow, # our flow function! It returns a derivative!
     # the current time is the start time! Solve from right now until as far forward as we want to solve
     (cur_time, end_time),
     cur_state,
-    # ... a bunch of solver constants to define your error tolerance and step size
 )
 if ode_sol.status == -1:
-    return f"Oh, no, solver failed! {ode_sol.message}"
+    print(f"Oh, no, solver failed! {ode_sol.message}")
 for time, state in zip(ode_sol.t, ode_sol.y.T):
-    # doing a little data translation (get the transpose [T] of the y values [read as state])
-    # pair them with a similarly lengthed iterable, t aka times, using zip(...)
-    print(f"State at {time}: {state}")
+    # doing a little data translation (get the transpose [T] of the y values [aka state])
+    # pair them with a similarly lengthed iterable, t [aka times], using zip(...)
+    state_string_repr = [f"{val:0.04f}" for val in state] # some tricks for printing this more nicely
+                                                          # it won't hold up in a court of law, but,
+    print(f"State at {time:0.04f}:  {state_string_repr}")
 ```
-[^4]: I kinda want to get into the weeds of ODE solution methods, at least the simple ones that work for this example and Flappy Bird. Maybe look forward too it if you bug me about it enough [on cohost](https://cohost.org/blit)!
 
-There is one wrinkle: our solver doesn't know when to stop. We know that we should stop flowing when `jump_check` is `true`, but our solver, if we only give it our `flow` function, doesn't know that. We can use an event function to help here. Event functions also take in the state and time, like `flow`, but return a single scalar. We can then ask the solver to do some extra work to figure out exactly at what time an event function returns 0. We can ask for the solver to stop solving when this occurs, so we'll stop solving when we're ready to jump! But, it means that our `jump_check` function also needs a little refactor to work like an event function:
+    State at 0.0000:  ['2.0000', '0.0000']
+    State at 0.0001:  ['2.0000', '-0.0010']
+    State at 0.0011:  ['2.0000', '-0.0110']
+    State at 0.0113:  ['1.9994', '-0.1109']
+    State at 0.1132:  ['1.9372', '-1.1104']
+    State at 1.0000:  ['-2.9050', '-9.8100']
+
+
+Everything looks ok until we get to that last value. W... what happened there. I need to set some tolerances on my solver-- you can kinda see that it did a "one, two, skip a few" approach. We get a bunch of work before the first tenth of a second and then suddenly, we jump to the end of the solution.
+
+The reasons for this are... a lot, and based on how the underlying solver math works, which could be a fun topic for another day! Anyway, let's set the solver to work at a fixed time interval.
+
+
 ```python
-def jump_check(time: float, state:tuple) -> int:
-    if state.y_pos <= 0 and state.y_vel < 0:
+# providing the start state again, but no notes this time.
+cur_state = State(y_pos=2.0, y_vel=0.0)
+cur_time = 0.0
+end_time = 1.0
+
+ode_sol = integrate.solve_ivp(
+    flow,
+    (cur_time, end_time),
+    cur_state,
+    # ✨ New! ✨ All points in the solution should only ever be a tenth of a second apart.
+    max_step=0.01,
+    # while we're here, let's set some tolerances
+    atol=1e-6, # stay within this number of decimal places
+    rtol=1e-6, # stay within this number of digits
+)
+if ode_sol.status == -1:
+    print(f"Oh, no, solver failed! {ode_sol.message}")
+for time, state in zip(ode_sol.t, ode_sol.y.T):
+    state_string_repr = [f"{val:0.04f}" for val in state]
+    print(f"State at {time:0.04f}:  {state_string_repr}")
+```
+
+    State at 0.0000:  ['2.0000', '0.0000']
+    State at 0.0100:  ['1.9995', '-0.0981']
+    State at 0.0200:  ['1.9980', '-0.1962']
+    State at 0.0300:  ['1.9956', '-0.2943']
+    State at 0.0400:  ['1.9922', '-0.3924']
+    ...
+    State at 0.9700:  ['-2.6151', '-9.5157']
+    State at 0.9800:  ['-2.7108', '-9.6138']
+    State at 0.9900:  ['-2.8074', '-9.7119']
+    State at 1.0000:  ['-2.9050', '-9.8100']
+
+
+Well, call me silly. Turns out the solver was right the whole time-- still it's nice to be able to _see_ that.
+
+Well, this does highlight another problem-- our hight ended up being less than zero. But, that makes sense: we haven't told the solver when to stop. We know that we should stop flowing when `jump_check` is `true`, but our solver, if we only give it our `flow` function, doesn't know that. We can use an event function to help here.
+
+Event functions also take in the state and time, like `flow`, but return a single scalar. We can then ask the solver to do some extra work to figure out exactly at what time an event function returns 0, and we can ask for the solver to stop solving when this occurs. We'll stop solving when we're ready to jump! But, it means that our `jump_check` function also needs a little refactor to work like an event function:
+
+
+```python
+def jump_check(time: float, state:Tuple[float, float]) -> int:
+    if state[0] <= 0 and state[1] < 0:
         # stop flowing when we're ready to jump-- it's a "0 crossing" of our flow system
         return 0
     else:
         # otherwise keep flowing
         return 1
+
+jump_check.terminal = True # you can assign attributes to functions in Python
+                           # it's not my favorite, but this is how scipy wants to tell
+                           # the solver stop solving when this function returns 0
+
+# same set of values to check as before, let's confirm the numbers do what we want.
+air_state = State(y_pos=1.0, y_vel=-1)
+print(f"Jump from {air_state}?\t{jump_check(0.0, air_state)}")
+ground_state = State(y_pos=0.0, y_vel=-1)
+print(f"Jump from {ground_state}?\t{jump_check(0.0, ground_state)}")
+below_ground_state = State(y_pos=-0.5, y_vel=-1)
+print(f"Jump from {below_ground_state}?\t{jump_check(0.0, below_ground_state)}")
 ```
-And since we're changing our API for two functions, we might as well change it for all of them to keep it consistent:
+
+    Jump from State(y_pos=1.0, y_vel=-1)?	1
+    Jump from State(y_pos=0.0, y_vel=-1)?	0
+    Jump from State(y_pos=-0.5, y_vel=-1)?	0
+
+
+Rad. And while we're here, lets update our other functions to have a consistent API. Sometimes getting an `int` and sometimes getting a `bool` is how programmers go crazy.
+
+
 ```python
-def flow(time: float, state: tuple) -> tuple: #...
-def flow_check(time: float, state: tuple) -> bool: #...
-def jump(time: float, state: tuple) -> tuple: #...
-def jump_check(time float, state: tuple) -> bool: #...
+def flow_check(time: float, state:Tuple[float, float]) -> int:
+    # as before, we're always flowing
+    return 0
+
+def jump(time: float, state:Tuple[float, float]) -> Tuple[float, float]:
+    # tuples are immutable, so we gotta make a new one
+    # that's probably a thing to think about w.r.t. optimizations
+    new_state = tuple([
+        state[0],
+        -0.5 * state[1]
+    ])
+    return new_state
+
+print(f"Flow signature: {inspect.signature(flow)}")
+print(f"Flow check signature: {inspect.signature(flow_check)}")
+print(f"Jump signature: {inspect.signature(jump)}")
+print(f"Jump check signature: {inspect.signature(jump_check)}")
 ```
-Ok, ok, ok. I think we can finally put all the pieces together into a block almost code:
+
+    Flow signature: (time: float, state: Tuple[float, float]) -> Tuple[float, float]
+    Flow check signature: (time: float, state: Tuple[float, float]) -> int
+    Jump signature: (time: float, state: Tuple[float, float]) -> Tuple[float, float]
+    Jump check signature: (time: float, state: Tuple[float, float]) -> int
+
+
+Ok, let's put it all together:
+
+
 ```python
-def solve_ball_system(flow, flow_check, jump, jump_check):
-    solution:List[Any] = []
-    while (cur_time < max_time and number_of_jumps < max_jumps):
-        if(flow_check(cur_time, state) == 1):
+from typing import List, Any, Callable
+
+@dataclass
+class HybridSystem():
+    """ Collect all our functions into one structure for ease of being able to remember things later.
+    """
+    flow: Callable
+    flow_check: Callable
+    jump: Callable
+    jump_check: Callable
+
+@dataclass
+class SystemParameters():
+    """ Setting up some stopping points: what our time interval to solve over should be, and the maximum
+        number of jumps we want to have before we call it quits.
+        Should probably just be an attribute of the hybrid system up there
+    """
+    start_time: float
+    end_time: float
+    max_jumps: int
+
+def solve_system(system:HybridSystem, params:SystemParameters, start_state:State) -> List[Any]:
+    solution:List[Any] = [] # gradual typing is neat!
+    cur_time = params.start_time
+    number_of_jumps = 0
+    state = start_state
+
+    while (cur_time < params.end_time and number_of_jumps < params.max_jumps):
+        if(system.flow_check(cur_time, state) == 0):
             ode_sol = integrate.solve_ivp(
-                flow,
-                (cur_state, max_time),
-                cur_state,
-                events=[jump_check],
-                #... again, solver stuff that we can just rely on the defaults for
+                system.flow,
+                (cur_time, params.end_time),
+                state,
+                # ✨ New! ✨
+                events=[system.jump_check],
+                max_step=0.01,
+                atol=1e-6,
+                rtol=1e-6
             )
             if ode_sol.status == -1:
                 print(f"Solver failed with message: {ode_sol.message}")
@@ -183,20 +418,71 @@ def solve_ball_system(flow, flow_check, jump, jump_check):
             for time, state in zip(ode_sol.t, ode_sol.y.T):
                 solution.append((time, state))
 
-            cur_time, cur_state = solution[-1]
-    
-        if (jump_check(cur_time, cur_state) == 1):
-            cur_state = jump(cur_time, cur_state)
-            n_jumps += 1
+            cur_time, state = solution[-1] # the last element in the solution is our new current state
+
+        # if we're not flowing, we, by definition, must be jumping. In practice, we want some
+        # stronger asserts here to prevent infinite loops
+        if (system.jump_check(cur_time, state) == 0):
+            state = jump(cur_time, state)
+            number_of_jumps += 1
+
     return solution
+
+bouncing_ball_hybrid_system = HybridSystem(flow, flow_check, jump, jump_check)
+bouncing_ball_params = SystemParameters(
+    start_time=0.0,
+    end_time=1.0,
+    max_jumps=5
+)
+start_state = State(y_pos=2.0, y_vel=0.0)
+solution = solve_system(bouncing_ball_hybrid_system, bouncing_ball_params, start_state)
+
+for time, state in solution:
+    state_string_repr = [f"{val:0.04f}" for val in state]
+    print(f"State at {time:0.04f}:  {state_string_repr}")
 ```
 
-And hey, you know, _you can make a graph out of this_:
+    State at 0.0000:  ['2.0000', '0.0000']
+    State at 0.0100:  ['1.9995', '-0.0981']
+    State at 0.0200:  ['1.9980', '-0.1962']
+    State at 0.0300:  ['1.9956', '-0.2943']
+    State at 0.0400:  ['1.9922', '-0.3924']
+    ...
+    State at 0.9700:  ['0.4927', '-0.0981']
+    State at 0.9800:  ['0.4912', '-0.1962']
+    State at 0.9900:  ['0.4888', '-0.2943']
+    State at 1.0000:  ['0.4853', '-0.3924']
 
-![Two graphs detailing the ball model we've been talking about. The top one is hight over time, showing smooth bounce arcs. Each arc is colored based on the jump that caused it. The bottom is a bunch of discontinuous slashes, showing the ball's velocity over time. Also colored by which jump caused it]({static}/images/better_ball_picture.png)
 
-This is, more or less, the core loop of the [Hybrid Dynamic System solver I wrote](https://github.com/dot-jpag/PyHyEQGameSim). There's some tricks to make the zero crossing thing faster, and a lot of bookkeeping to get some abstractions so I don't need to work with raw tuples and remember which position was `velocity`.
+Well, that looks right... at least the hight isn't negative anymore. But, is it? We could try and read the data and figure out exactly what happened, but it's probably easier to just graph it.
 
-There is one big bummer though: we had a nice `State` dataclass and lost it to work with `scipy`. What if we could get it back?
+Instead of outputting this "nicely formatted" string to the console, a few quick modifications can have us write it to a `.csv` file that we can read in and chart later with `matplotlib` [^6].
 
-Ok, so bouncing balls are fun and all, but what about [flapping birds](https://www.rollingstone.com/culture/culture-news/the-flight-of-the-birdman-flappy-bird-creator-dong-nguyen-speaks-out-112457/)?
+[^6]: I'm skipping the graphing code for now-- it's a lot of boilerplate, and I want to someday I want to have a nicer publishing flow. That means it's future content, baybee.
+
+
+```python
+import csv
+
+bouncing_ball_hybrid_system = HybridSystem(flow, flow_check, jump, jump_check)
+bouncing_ball_params = SystemParameters(0.0, 1.0, 5)
+start_state = State(y_pos=2.0, y_vel=0.0)
+solution = solve_system(bouncing_ball_hybrid_system, bouncing_ball_params, start_state)
+
+# ✨ New! ✨ we want to write out to a csv rather than standard out
+# revealing a little bit of how I write here, don't look too hard at this file path
+with open("../tmp/bouncing_balls_output_data.csv", "w") as f:
+    writer = csv.DictWriter(f=f, fieldnames=["time", "y_pos", "y_vel"])
+    writer.writeheader()
+    for time, state in solution:
+        writer.writerow({
+            "time": time,
+            "y_pos": state[0], # unfortunately, all our nice names have been stripped,
+            "y_vel": state[1]  # and we need to remember the ordering
+        })
+
+```
+
+![An animated graph of how the velocity of a bouncing ball changes over time-- it bounces less and less high! Woo!]({static}/images/guesswork_bouncing_balls.svg)
+
+Hey, this looks pretty good! Alright, these are the basics, and they tell us how balls bounce So, how does Flappy Bird... flap?
