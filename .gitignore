@@ -145,3 +145,6 @@ dmypy.json
 
 #don't leak secrets
 .envrc
+
+#ignore directory for temporary artifacts
+/tmp/
