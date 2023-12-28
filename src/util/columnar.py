@@ -1,34 +1,26 @@
 """Column-like serialization for data
 """
 from abc import ABC
-from typing import Dict, List
+from typing import Dict, List, get_origin, get_args
 import csv
 from pathlib import Path
 import re
+import inspect
 
-import attr
-
-class Columnar(ABC):
+class Columnar():
     """ Base class for holding onto some simple ops for doing data manipulation
         Allows for dynamic lookup with Serializable[key] syntax
         Data gets serialized as:
-        class.attr = [value, value, value], where type(value) == self.taxonomy[attr]
+        class.attr = [value, value, value], where 
+            type(value) == get_args(__annotations__[key])[0]
+        In English, data is converted to the correct type given the annotations on the subclass
     """
-    taxonomy: Dict
-    __hidden_attr_regex: re.Pattern
     
-    def __init__(self, taxonomy):
+    def __init__(self):
         """ Constructor! You also need to pass a taxonomy of types
             so we can serialize data correctly. We also check that the 
             provided class attributes are all lists
-        Args:
-            taxonomy: Dict[str, class] a dictionary of string keys to types,
-                tells us what the type of each column is, and provides a way to
-                serialize to that type
         """
-        self.__hidden_attr_regex = re.compile(r"^_")
-        self.__check_taxonomy(taxonomy)
-        self.taxonomy = taxonomy
         self.__check_init()
 
     def append_from_dict(self, data:Dict):
@@ -40,19 +32,17 @@ class Columnar(ABC):
         """
         self.__check_dim(data)
         for key, value in data.items():
-            self.__check_data(key, value)
-            value_type = self.taxonomy[key]
-            self[key].append(value_type(value))
+            self.__append_and_convert(key, value)
 
     @classmethod
-    def from_csv(cls, csv_path:Path, taxonomy:Dict):
+    def from_csv(cls, csv_path:Path):
         """ Given a CSV file (with column names) and a taxonomy,
             built out a Columnar dataclass
         Args:
             csv_path (Path): path to a csv file (with column names) on the file system
             taxonomy (Dict[str, class]): the types of each value in the csv
         """
-        instance = cls(taxonomy)
+        instance = cls()
         with open(csv_path, "r") as f:
             reader = csv.DictReader(f)
             for row in reader:
@@ -60,42 +50,23 @@ class Columnar(ABC):
     
         return instance
 
-    def __check_taxonomy(self, taxonomy:Dict):
-        """ Given a taxonomy (str -> type mapping), check to make sure that
-            each of its keys is in our attribute list
+    def __append_and_convert(self, key:str, value:str):
+        """ Convert the value to the type in the annotations under key, and add it to the
+            appropriate list
         Args:
-            taxonomy (Data[str, type]): a dictionary that tells us what type each of our columns has
+            key (str): the name of the column to add this value to
+            value (str): the stringified value we want to add to the column
         """
-        
-        attrs_set = set(self.__extract_attribute_names())
-        taxonomy_set = set(taxonomy.keys())
-        # the venn diagram should be a perfect circle
-        if len(attrs_set) != len(attrs_set.union(taxonomy_set)):
-            print(f"Attributes: {attrs_set}")
-            print(f"Taxonomy: {taxonomy_set}")
-            assert False
-    
-    def __extract_attribute_names(self) -> List:
-        """Pull out attribute names for the class.
+        annotations = inspect.get_annotations(type(self))
+        assert key in annotations
 
-        Returns:
-            List: a list of all the attribute names defined on this class
-                subclasses 
-        """
-        cls_ref_keys = [key for key in vars(type(self)).keys()]
-        attrs = [key for key in cls_ref_keys if not self.__hidden_attr_regex.match(key)]
-        return attrs
-
-    def __check_data(self, key:str, value):
-        """ For a particular column name and value, check that the column exists and
-            that the type of the taxonomy lines up with the type of the value
-        Args:
-            key (str): column name
-            value (Any): the value to add to that column
-        """
-        attrs = self.__extract_attribute_names()
-        assert key in attrs
-        assert key in self.taxonomy
+        to_type = get_args(annotations[key])[0]
+        if to_type == str: 
+            self[key].append(value) # value's already a string
+        elif to_type == int:
+            self[key].append(int(float(value))) # absolutely should have more checks here
+        else:
+            self[key].append(to_type(value))
     
     def __check_dim(self, data:Dict):
         """ Check the dimensionality (cardinality?) of the row of data coming in--
@@ -105,16 +76,16 @@ class Columnar(ABC):
             data (Dict[str, Any]): a "row" of data, as a dictionary. For example:
                 {"name": "sam", "number": 5, ...}
         """
-        attrs = self.__extract_attribute_names()
-        assert len(attrs) == len(data.keys())
+        attrs_set = set(inspect.get_annotations(type(self)).keys())
+        assert len(attrs_set) == len(data.keys())
     
     def __check_init(self):
         """ Check that we've initialized a subclass correctly. All attributes must have
             the 'list' type
         """
-        attrs = self.__extract_attribute_names()
-        for name in attrs:
-            assert type(self[name]) == list
+        annotations = inspect.get_annotations(type(self))
+        for key, value in annotations.items():
+            assert type(value) == list
         
     def __getitem__(self, key):
         """ Get an item from the serializable. Lets us use class[name] syntax to get the
