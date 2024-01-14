@@ -130,7 +130,7 @@ print(f"Flow from {below_ground_state}?\t{flow_check(below_ground_state)}")
 
 I know. This feels like I'm pranking you. I'm not trying to. Sometimes, its just like this. Our system is so simple that it's _always_ flowing. Sure, it jumps sometimes, but that happens in a single instant, and gravity never stops, so. There are times in video games when we want to stop applying constant forces ([coyote time](https://gamerant.com/celeste-coyote-time-mechanic-platforming-impact-hidden-mechanics/)), so this is less silly in real life.
 
-Now, to actually calculate flows... well, we're not gonna do it by hand. Remember that a flows are an ever changing, ever evolving thing over time, and math has a tool for that: a derivative. Our flow needs to be a function that takes in our state and returns that state's derivative with respect to time.
+Now, to actually calculate flows... well, we're not gonna do it by hand. Remember that a flows are an ever changing, ever evolving thing over time, and math has a tool for that: a differential equation. Our flow needs to be a function that takes in our state and returns that state's derivative with respect to time.
 
 Ok, so, the derivative of position is the velocity, right? Velocity describes how position changes over time. The derivative of velocity is acceleration... which we'll pretend is a [negative constant](https://en.wikipedia.org/wiki/Gravitational_acceleration) thanks to gravity of 9.81.
 
@@ -191,7 +191,7 @@ Ok, so `__main__` might be weird there for you, but hey it's our functions![^3] 
 
 But uh, how do we use these four equations? We want to simulate the model for a given start state. We can do this analytically, no machine learning or evolutionary algorithms here! Because we're coming up with simulation results deterministically, its sometimes said that we "solve" the model.
 
-Because a `flow` is a function that takes in a state and returns a derivative with respect to a single variable, time, it falls under a class known as an Ordinary Differential Equation, or ODE. This is a well known branch of mathematics, and there exist methods to solve for ODEs! If you give an ODE Solver a function like `flow`, a start time, a start state and some constraints like "solve until `end_time`", you can get the states (along with times) for a `flow` from the start time to end time. This is called the "initial value problem" (IVP).
+Because a `flow` is a function that takes in a state and returns a derivative with respect to a single variable, time, it's an Ordinary Differential Equation, or ODE. This is a well known branch of mathematics, and there exist methods to solve for ODEs! If you give an ODE Solver a function like `flow`, a start time, a start state and some constraints like "solve until `end_time`", you can get the states (along with times) for a `flow` from the start time to end time. This is called the "initial value problem" (IVP).
 
 This post isn't going to go into writing your own ODE Solver[^5]. I just used `scipy`'s off the shelf one. I need to tweak the model a little bit. [The documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) says that (paraphrasing):  
 
@@ -272,6 +272,8 @@ The reasons for this are... a lot, and based on how the underlying solver math w
 
 
 ```python
+from util.print import blog_print # homegrown hack for printing large amounts of data
+
 # providing the start state again, but no notes this time.
 cur_state = State(y_pos=2.0, y_vel=0.0)
 cur_time = 0.0
@@ -289,21 +291,27 @@ ode_sol = integrate.solve_ivp(
 )
 if ode_sol.status == -1:
     print(f"Oh, no, solver failed! {ode_sol.message}")
-for time, state in zip(ode_sol.t, ode_sol.y.T):
-    state_string_repr = [f"{val:0.04f}" for val in state]
-    print(f"State at {time:0.04f}:  {state_string_repr}")
+
+# technically ✨ New! ✨
+# this is a utility function for me to only print out snippets of large amounts of
+# data so the blog's reading time doesn't increase with data I don't expect anyone
+# to actually read.
+# and yeah, the call site smells it's not very nice to memory to allocate a list like this
+# but the gist is that the second arg is a function that takes items from the first arg
+# and turns them into something good for our eyes
+blog_print(
+    list(zip(ode_sol.t, ode_sol.y.T)),
+    lambda line: f"State at {line[0]:0.04f}: {[f'{val:0.04f}' for val in line[1]]}"
+)
 ```
 
-    State at 0.0000:  ['2.0000', '0.0000']
-    State at 0.0100:  ['1.9995', '-0.0981']
-    State at 0.0200:  ['1.9980', '-0.1962']
-    State at 0.0300:  ['1.9956', '-0.2943']
-    State at 0.0400:  ['1.9922', '-0.3924']
+    State at 0.0000: ['2.0000', '0.0000']
+    State at 0.0100: ['1.9995', '-0.0981']
+    State at 0.0200: ['1.9980', '-0.1962']
     ...
-    State at 0.9700:  ['-2.6151', '-9.5157']
-    State at 0.9800:  ['-2.7108', '-9.6138']
-    State at 0.9900:  ['-2.8074', '-9.7119']
-    State at 1.0000:  ['-2.9050', '-9.8100']
+    State at 0.9800: ['-2.7108', '-9.6138']
+    State at 0.9900: ['-2.8074', '-9.7119']
+    State at 1.0000: ['-2.9050', '-9.8100']
 
 
 Well, call me silly. Turns out the solver was right the whole time-- still it's nice to be able to _see_ that.
@@ -374,6 +382,7 @@ Ok, let's put it all together:
 
 ```python
 from typing import List, Any, Callable
+from util.print import blog_print # a utility function for printing large chunks of data
 
 @dataclass
 class HybridSystem():
@@ -436,29 +445,27 @@ bouncing_ball_params = SystemParameters(
 )
 start_state = State(y_pos=2.0, y_vel=0.0)
 solution = solve_system(bouncing_ball_hybrid_system, bouncing_ball_params, start_state)
-
-for time, state in solution:
-    state_string_repr = [f"{val:0.04f}" for val in state]
-    print(f"State at {time:0.04f}:  {state_string_repr}")
+# this kinda sucks, I won't lie, this call site is impossible to read
+# but that can be a problem for future me, you just need to know that
+# the lambda will generate a human readable string for the parts of the
+# solution we want to print
+blog_print(solution, lambda line: f"State at {line[0]:0.04f}: {[f'{val:0.04f}' for val in line[1]]}")
 ```
 
-    State at 0.0000:  ['2.0000', '0.0000']
-    State at 0.0100:  ['1.9995', '-0.0981']
-    State at 0.0200:  ['1.9980', '-0.1962']
-    State at 0.0300:  ['1.9956', '-0.2943']
-    State at 0.0400:  ['1.9922', '-0.3924']
+    State at 0.0000: ['2.0000', '0.0000']
+    State at 0.0100: ['1.9995', '-0.0981']
+    State at 0.0200: ['1.9980', '-0.1962']
     ...
-    State at 0.9700:  ['0.4927', '-0.0981']
-    State at 0.9800:  ['0.4912', '-0.1962']
-    State at 0.9900:  ['0.4888', '-0.2943']
-    State at 1.0000:  ['0.4853', '-0.3924']
+    State at 0.9800: ['0.4912', '-0.1962']
+    State at 0.9900: ['0.4888', '-0.2943']
+    State at 1.0000: ['0.4853', '-0.3924']
 
 
 Well, that looks right... at least the hight isn't negative anymore. But, is it? We could try and read the data and figure out exactly what happened, but it's probably easier to just graph it.
 
 Instead of outputting this "nicely formatted" string to the console, a few quick modifications can have us write it to a `.csv` file that we can read in and chart later with `matplotlib` [^6].
 
-[^6]: I'm skipping the graphing code for now-- it's a lot of boilerplate, and I want to someday I want to have a nicer publishing flow. That means it's future content, baybee.
+[^6]: I'm skipping the graphing code for now-- it's a lot of boilerplate, and I want to someday I want to have a nicer publishing flow. That means it's future content, baybee-- I can post about it!
 
 
 ```python
@@ -486,3 +493,5 @@ with open("../tmp/bouncing_balls_output_data.csv", "w") as f:
 ![An animated graph of how the velocity of a bouncing ball changes over time-- it bounces less and less high! Woo!]({static}/images/guesswork_bouncing_balls.svg)
 
 Hey, this looks pretty good! Alright, these are the basics, and they tell us how balls bounce So, how does Flappy Bird... flap?
+
+
