@@ -54,8 +54,8 @@ devserver:
 devserver-global:
     pelican -l "{{input_dir}}" -o "{{output_dir}}" -s "{{conf_file}}" {{pelican_opts}} -b 0.0.0.0 
 
-publish: html
+publish: markdown
     pelican "{{input_dir}}" -o "{{output_dir}}" -s "{{publish_conf}}" {{pelican_opts}}
 
-upload:
+upload: publish
     rsync -e "ssh -i {{ssh_identity}}" -P -rvzc --include tags --cvs-exclude --delete "{{output_dir}}/" "{{ssh_user}}@{{ssh_host}}:{{ssh_target_dir}}"

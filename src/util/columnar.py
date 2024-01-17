@@ -64,7 +64,7 @@ class Columnar():
         if to_type == str: 
             self[key].append(value) # value's already a string
         elif to_type == int:
-            self[key].append(int(float(value))) # absolutely should have more checks here
+            self[key].append(to_type(float(value))) # absolutely should have more checks here
         else:
             self[key].append(to_type(value))
     
