@@ -497,6 +497,6 @@ with open("../tmp/bouncing_balls_output_data.csv", "w") as f:
 
 ![An animated graph of how the velocity of a bouncing ball changes over time-- it bounces less and less high! Woo!]({static}/images/guesswork_bouncing_balls.svg)
 
-Hey, this looks pretty good! Alright, these are the basics, and they tell us how balls bounce So, [how does Flappy Bird... flap]({filename}/content/flapping-birds.md)?
+Hey, this looks pretty good! Alright, these are the basics, and they tell us how balls bounce So, [how does Flappy Bird... flap]({filename}/flapping-birds.md)?
 
 
