@@ -92,7 +92,9 @@ class ExportCode(ABC):
         raise RuntimeError(f"Unable to handle import for {symbol_name} / {symbol_ref}") 
 
     def unpack_nested_annotation(self, kind, imported_names:set=set()) -> set:
-        """ Type annotations are their own special kind of heck-- 
+        """ TODO: still working on this, I think-- looks like it doesn't quite export correctly
+                    the recursion doesn't make a ton of sense to my fresh eyes, so that could be
+                    a part of it 
         """
         
         # resolve a nested annotation-- we want to import the base at this level of nesting

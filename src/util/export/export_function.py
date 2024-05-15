@@ -5,9 +5,11 @@ import inspect
 from util.export.export_code import ExportCode
 
 class ExportFunction(ExportCode):
-    """ Dataclass for all the information we need to export a function
+    """ Class to hold onto all the data I need to generate a function. This also
+        traces through the code object, identifying dependencies and marking those
+        for generation and importing
     Attributes:
-        source (str): the source code for this function
+        source: the actual code source string, clearing out leading spaces
     """
     source: str
 
@@ -21,16 +23,18 @@ class ExportFunction(ExportCode):
         self.source = "\n".join(stripped_lines)
 
     def handle_annotations(self):
-        """ DOCUMENTATION AROUND HANDLING ANNOTATIONS IF WE HAVE THEM
+        """ TODO: I think this is where I currently am-- trying to unpack type annotations in a code object
+            and also import those correctly
         """
         annotations = self.src_code.__annotations__
         for name, typing_type in annotations.items():
             _ = self.unpack_nested_annotation(typing_type)
 
         return self
+
     def handle_references(self):
-        """ DOCUMENTATION AROUND HANDLING SYMBOLIC REFERENCES INSIDE A FUNCTION IF WE HAVE IT
-            THIS ADDS STUFF TO THE FUNCTION'S DIFFERED IMPORT LOGIC
+        """ Identify references to other, non-local symbols in the function's source code, and mark them
+            for importing. Also, generate import statements for them
         """
         # TODO: maybe also check unbound?
         _nonlocals, _globals, _builtins, _unbound = inspect.getclosurevars(self.src_code)
@@ -42,10 +46,19 @@ class ExportFunction(ExportCode):
         return self
 
     def generate_module(self, path: Path):
+        """ Actually generate the code at path to write a bare function in its own module
+        Params:
+            path: the file system directory we want to create a new python file under
+        """
         raise NotImplementedError("haven't written code for exporting functions for bare modules!")
     
     @classmethod
     def export(cls, code_object, path:Path):
+        """ Export this function to a file located under path
+        Params:
+            code_object: the function we're trying to export
+            path: the location to where we eventually want to write a python file
+        """
         return ExportFunction(code_object)\
             .handle_references()\
             .handle_annotations()

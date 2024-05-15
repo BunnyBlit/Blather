@@ -10,12 +10,10 @@ class ExportClass(ExportCode):
     """ Class for handling the process of going from Python bytecode to Python source
         so we can import this later
     Attributes:
-        name (str): class name
-        inherits (str): a set of class names to inherit from
-        properties (Dict[str, str]): the properties, along with their types, to add to this class
-        imports (Dict[str, Set[str]]): mapping of module name to a list of things from
-                                        that module to import
-        methods (ExportFunction): list of functions we need to export
+        inherits: the set of superclass names that this class comes from
+        properties: a dictionary of name, type string pairs for the properties on this object
+        methods: a list of ExportFunction objects that are the methods on this class
+        dummy: a dummy type to identify python-generated parts of a class (we only need the human parts)
     """
     inherits: Set[str]
     properties: Dict[str, str]
@@ -23,6 +21,10 @@ class ExportClass(ExportCode):
     dummy: Any
 
     def __init__(self, code_object):
+        """ Constructor
+        Params:
+            code_object: the class that we're trying to export to a file
+        """
         super().__init__(
             src_code=code_object,
         )
@@ -36,9 +38,6 @@ class ExportClass(ExportCode):
     def generate_module(self, export_dir:Path):
         """ Generate source code for a python class that we can import later!
         Params:
-            export_class (ExportClass): the code to generate
-            file_name (str): name of the file to put this under, will be this exported
-                            code's module name
             export_dir (Path): directory where all the code from this export is gonna go
         """
         # create required directories
@@ -80,12 +79,13 @@ class ExportClass(ExportCode):
         return self
     
     def handle_inheritance(self):
-        """ DOCUMENTATION ABOUT HANDLING INHERITANCE
+        """ Look at the MRO of the class so we can figure out this class's inheritance,
+            generate import statements if required for them, and write out the class declaration correctly
         """
         mro = inspect.getmro(self.src_code)
         # TODO: if I ever dip into multiple inheritance, I'll need to be more complicated here, but roughly, I only care about the first two elements
         if mro[0] != self.src_code: raise Exception(f"Unexpected MRO for {self.src_code}:\n{mro}") 
-        superclass = mro[1] if mro[1] != object else None # object better be the goddamn root here or I'll lose it
+        superclass = mro[1] if mro[1] != object else None
         # TODO: we actually don't even handle single inheritance yet
         if superclass:
             print(f"Warning! Superclass handling is not completely in yet! Can't handle {superclass}")
@@ -93,9 +93,13 @@ class ExportClass(ExportCode):
         return self
 
     def handle_properties(self):
-        """DOCUMENTATION ABOUT HANDLING PROPERTIES
+        """ Figure out the names and types of the properties on this object, so we can generate correct
+            property statements later. We look at the class's __annotations__ property and the source code of the
+            constructor to figure out what the properties are.
         """
         # TODO: ANNOTATIONS ARE AWFUL
+        # TODO: also, one could dynamically assign props in the middle of a method, so we'll probably need to handle
+        #       that at some point
 
         # ok, gameplan-- start with __annotations__ if we have it
         if hasattr(self.src_code, "__annotations__"):
@@ -114,8 +118,11 @@ class ExportClass(ExportCode):
 
         return self
     
-    def handle_methods(self, export_dir:Path):
-        """DOCUMENTATION ABOUT HANDLING METHODS
+    def handle_methods(self):
+        """ Find all the methods inside the class and figure out if we have source code for them. Not all methods
+            are generable-- some don't have source code, some have references that we can't easily handle.
+            For all the methods we can handle, create ExportFunction objects for them and add them to our list of class
+            methods
         """
         # TODO: there's a cleaner way to do this where we push a lot of this logic inside ExportFunction
         #        and bubble it up
@@ -146,13 +153,15 @@ class ExportClass(ExportCode):
 
     @classmethod
     def export(cls, code_object, path):
-        """ DOCUMENTATION ABOUT BUILDING ONE OF THESE FROM CODE
-            ALSO ABOUT HOW THIS RETURNS A 'DEFERRED IMPORT MAP'
-            TO GET AROUND BULLSHIT WITH CIRCULAR IMPORTS
+        """ The actual export function! Creates all the code references and then prints them out to a file
+            under the path provided
+        Params:
+            code_object: the code object we want to turn back into source code
+            path: where we want the code to eventually live in the file system
         """
         return ExportClass(code_object)\
             .handle_inheritance()\
             .handle_properties()\
-            .handle_methods(path)\
+            .handle_methods()\
             .generate_module(path)
     
