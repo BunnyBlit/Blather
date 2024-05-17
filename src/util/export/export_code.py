@@ -1,7 +1,7 @@
 import inspect
 import re
 from types import NoneType, UnionType
-from typing import Any, get_args, get_origin
+from typing import Any, List, get_args, get_origin
 from collections import defaultdict
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -104,7 +104,13 @@ class ExportCode(ABC):
         # resolve a nested annotation-- we want to import the base at this level of nesting
         # if there is no base, then we want to import this type
         base_type = get_origin(kind) if get_origin(kind) else kind
-        if not base_type == UnionType:
+        if base_type == UnionType or base_type == list:
+             # recurse on arguments-- slowly adding more and more to our imported names list
+            type_args = get_args(kind)
+            for arg in type_args:
+                imported_names |= self.unpack_nested_annotation(arg, imported_names)
+      
+        else:
             module_name, import_name = self.handle_import(base_type.__name__, base_type)
             # do a little conversion to something we'd actually want to use later--
             # if we have an import name, that's how we reference this down the line
@@ -116,12 +122,9 @@ class ExportCode(ABC):
                 imported_names.add("None")
             else:
                 imported_names.add(base_type.__name__)
-        else:
-            # recurse on arguments-- slowly adding more and more to our imported names list
-            type_args = get_args(kind)
-            for arg in type_args:
-                imported_names |= self.unpack_nested_annotation(arg, imported_names)
 
+        # TODO: potentially, can't really flatten the types to one set here. Keeping track of the tree is important
+        #       see, list[type]. This makes a good place to pick back up
         return imported_names
 
 
