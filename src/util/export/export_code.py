@@ -91,22 +91,19 @@ class ExportCode(ABC):
         
         raise RuntimeError(f"Unable to handle import for {symbol_name} / {symbol_ref}") 
 
-    def unpack_nested_annotation(self, kind, imported_names:set=set(), depth=0) -> set:
-        """ TODO  
+    def unpack_nested_annotation(self, kind, imported_names:set=set()) -> set:
+        """ Annotations can be nested-- think about union types (A | B --> UnionType[A, B])
+            we don't want the final type to be UnionType, we want it to be A | B
+            this recurses down through each argument to a sum type (?) and figures out the way to import it
+            before bubbling back up with the list of types to use for the annotation
+        Params:
+            kind: the base type that we're trying to unpack, if it has arguments
+            imported_names: the set of symbols we'll generate import statements for, and how
+                            to handle that
         """
-        # OK! I wasn't actually recursing well-- the correct condition is in the comment
-        # don't use isinstance with typing objects, apparently
-        # the other thing that will bite me is that we eventually need to convert this into a string
-        # but it's not really clear on the nesting levels with just a set
-        # this probably means we want a tree of some kind
-        # upsidedown smile
-        depth_header = ''.join(['\t' for _ in range(depth)])
-        print(f"{depth_header}args: {kind}, {imported_names}")
         # resolve a nested annotation-- we want to import the base at this level of nesting
         # if there is no base, then we want to import this type
         base_type = get_origin(kind) if get_origin(kind) else kind
-        print(f"{depth_header}base: {base_type}")
-        print(f"{depth_header}recurse? {base_type == UnionType}")
         if not base_type == UnionType:
             module_name, import_name = self.handle_import(base_type.__name__, base_type)
             # do a little conversion to something we'd actually want to use later--
@@ -122,14 +119,9 @@ class ExportCode(ABC):
         else:
             # recurse on arguments-- slowly adding more and more to our imported names list
             type_args = get_args(kind)
-            print(f"{depth_header}{type_args}")
             for arg in type_args:
-                imported_names |= self.unpack_nested_annotation(arg, imported_names, depth+1)
+                imported_names |= self.unpack_nested_annotation(arg, imported_names)
 
-        # UNPACK OUT TO A STRING
-        # SOMETIMES THIS IS NESTED, BUT SOMETIMES IT'S NOT IF THE OG WAS A UNION TYPE
-        # BUT MAYBE ALSO FUCK ALL THAT AND JUST DO UnionType[...]
-        print(f"{depth_header}returning: {imported_names}")
         return imported_names
 
 

@@ -23,10 +23,10 @@ class ExportFunction(ExportCode):
         self.source = "\n".join(stripped_lines)
 
     def handle_annotations(self):
-        """ TODO: I think this is where I currently am-- trying to unpack type annotations in a code object
-            and also import those correctly
+        """ TODO: currently working on return type annotations 
         """
         annotations = self.src_code.__annotations__
+        print(annotations)
         for name, typing_type in annotations.items():
             _ = self.unpack_nested_annotation(typing_type)
 
