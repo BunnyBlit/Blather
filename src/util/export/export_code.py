@@ -62,9 +62,11 @@ class ExportCode(ABC):
         Returns:
             the module name, symbol name tuple that we'll use to generate an import statement
         """
+        # TODO: pick up here, sometimes the _type_ has a reference to types, but we want
+        #       a vaguely similar reference in typing
         # if this global reference has a __module__ attribute
         if hasattr(symbol_ref, "__module__"):
-            # if this comes from a 'builtins' module, skip it
+            # if this comes from a 'builtins' module, don't do any imports
             if symbol_ref.__module__ == "builtins":
                 return "", ""
     
@@ -91,42 +93,53 @@ class ExportCode(ABC):
         
         raise RuntimeError(f"Unable to handle import for {symbol_name} / {symbol_ref}") 
 
-    def unpack_nested_annotation(self, kind, imported_names:set=set()) -> set:
+    def unpack_nested_annotation(self, kind) -> str:
         """ Annotations can be nested-- think about union types (A | B --> UnionType[A, B])
-            we don't want the final type to be UnionType, we want it to be A | B
-            this recurses down through each argument to a sum type (?) and figures out the way to import it
+            or lists (List[A])
+            This recurses down through each argument to a sum type (?) and figures out the way to import it
             before bubbling back up with the list of types to use for the annotation
         Params:
             kind: the base type that we're trying to unpack, if it has arguments
-            imported_names: the set of symbols we'll generate import statements for, and how
-                            to handle that
+        Returns:
+            a string that we can use that has all the right fixin's
         """
         # resolve a nested annotation-- we want to import the base at this level of nesting
         # if there is no base, then we want to import this type
+        # kinda sorta new plan-- we're trying to import every arg _and_ the base along the way
+        #   looking to end up with a string like
+        #   base[arg, arg]
+        #   or just arg
+        imported = list() # we only generate 1 import statement, but maybe need to generate an annotation with float, float, for example
         base_type = get_origin(kind) if get_origin(kind) else kind
-        if base_type == UnionType or base_type == list:
-             # recurse on arguments-- slowly adding more and more to our imported names list
-            type_args = get_args(kind)
-            for arg in type_args:
-                imported_names |= self.unpack_nested_annotation(arg, imported_names)
-      
+        # for handling annotations, the flow here is a little different! if the base type is something like list or tuple
+        # then the import name is special-cased out to a particular bit of code in the typing module
+        if base_type == list:
+            self.imports["typing"].add("List")
+            import_name = "List"
+        elif base_type == tuple:
+            self.imports["typing"].add("Tuple")
+            import_name = "Tuple"
+        elif base_type == UnionType:
+            self.imports["typing"].add("Union")
+            import_name = "Union" 
         else:
-            module_name, import_name = self.handle_import(base_type.__name__, base_type)
-            # do a little conversion to something we'd actually want to use later--
+            _, import_name = self.handle_import(base_type.__name__, base_type)
+        type_args = get_args(kind)
+
+        if len(type_args) == 0:
             # if we have an import name, that's how we reference this down the line
             # otherwise we need to do some shenanigans with nones. Our base is to just use
             # the type's __name__
             if import_name:
-                imported_names.add(import_name)
+                return import_name
             elif base_type == NoneType:
-                imported_names.add("None")
+                return "None"
             else:
-                imported_names.add(base_type.__name__)
-
-        # TODO: potentially, can't really flatten the types to one set here. Keeping track of the tree is important
-        #       see, list[type]. This makes a good place to pick back up
-        return imported_names
-
+                return base_type.__name__
+            
+        for arg in type_args:
+            imported.append(self.unpack_nested_annotation(arg))
+        return import_name + f"[{', '.join(imported)}]"
 
     @abstractmethod
     def generate_module(self, path:Path):

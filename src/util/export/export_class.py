@@ -97,17 +97,15 @@ class ExportClass(ExportCode):
             property statements later. We look at the class's __annotations__ property and the source code of the
             constructor to figure out what the properties are.
         """
-        # TODO: 
         # TODO: also, one could dynamically assign props in the middle of a method, so we'll probably need to handle
         #       that at some point
 
         # ok, gameplan-- start with __annotations__ if we have it
         if hasattr(self.src_code, "__annotations__"):
             cls_annotations = self.src_code.__annotations__
-            print(f"{self.name}:")
             for name, annotated_type in cls_annotations.items():
-                imported_type_names = self.unpack_nested_annotation(annotated_type, set())
-                self.properties[name] = " | ".join(imported_type_names)
+                imported_name = self.unpack_nested_annotation(annotated_type)
+                self.properties[name] = imported_name
         
         # then grab anything we can get from __init__ that isn't initialized
         init_funct = getattr(self.src_code, "__init__", None)
