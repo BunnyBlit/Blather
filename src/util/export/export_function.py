@@ -1,7 +1,7 @@
-from dataclasses import dataclass
+
 from pathlib import Path
-from typing import get_origin, get_args
 import inspect
+import ast
 from util.export.export_code import ExportCode
 
 class ExportFunction(ExportCode):
@@ -37,12 +37,15 @@ class ExportFunction(ExportCode):
         """ Identify references to other, non-local symbols in the function's source code, and mark them
             for importing. Also, generate import statements for them
         """
-        # TODO: maybe also check unbound?
+
+        # we can inspect the variables under the closure in the code object to handle some imports...
         _nonlocals, _globals, _builtins, _unbound = inspect.getclosurevars(self.src_code)
-        # at this point, we've already gotten source code and checked for potential unbound references
-        # inside the block, so we can just get movin' and groovin'
         for global_name, global_ref in _globals.items():
             self.handle_import(global_name, global_ref)
+
+        # ... but not all of them, which will require us to walk the ast
+        root:ast.Module = ast.parse(self.source)
+        self.handle_imports_from_ast(root)
     
         return self
 

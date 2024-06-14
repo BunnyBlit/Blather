@@ -1,5 +1,7 @@
 import inspect
+import ast
 import re
+from textwrap import indent
 from types import NoneType, UnionType, ModuleType
 from typing import Any, List, get_args, get_origin, Union
 from collections import defaultdict
@@ -53,9 +55,16 @@ class ExportCode(ABC):
         except:
             return False
 
-    def handle_imports_from_ast(self, ast) -> List[tuple[str, str]]:
+    def handle_imports_from_ast(self, ast_root:ast.AST) -> List[tuple[str, str]]:
         """ Walk an abstract syntax tree and generate import statements based on what we find.
+        Params:
+            ast_root: the root of the AST tree we're walking to generate import statements from
         """
+        #print(ast.dump(ast_root, indent=4))
+        for node in ast.walk(ast_root):
+            if isinstance(node, ast.AnnAssign):
+                print(ast.dump(node, indent=4))
+                print("--------")   
         return []
     
     def handle_import(self, symbol_name, symbol_ref) -> tuple[str, str]:
