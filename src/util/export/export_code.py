@@ -1,10 +1,11 @@
 import inspect
 import re
-from types import NoneType, UnionType
-from typing import Any, List, get_args, get_origin
+from types import NoneType, UnionType, ModuleType
+from typing import Any, List, get_args, get_origin, Union
 from collections import defaultdict
 from abc import ABC, abstractmethod
 from pathlib import Path
+from pprint import pformat
 
 class ExportCode(ABC):
     """ Abstract base class for generating a file of code given an representation of that code as
@@ -52,6 +53,11 @@ class ExportCode(ABC):
         except:
             return False
 
+    def handle_imports_from_ast(self, ast) -> List[tuple[str, str]]:
+        """ Walk an abstract syntax tree and generate import statements based on what we find.
+        """
+        return []
+    
     def handle_import(self, symbol_name, symbol_ref) -> tuple[str, str]:
         """ Handle the need to import a symbol for this code we want to export
             this will eventually be used to generate from module import symbol
@@ -62,9 +68,7 @@ class ExportCode(ABC):
         Returns:
             the module name, symbol name tuple that we'll use to generate an import statement
         """
-        # TODO: pick up here, sometimes the _type_ has a reference to types, but we want
-        #       a vaguely similar reference in typing
-        # if this global reference has a __module__ attribute
+        # otherwise,
         if hasattr(symbol_ref, "__module__"):
             # if this comes from a 'builtins' module, don't do any imports
             if symbol_ref.__module__ == "builtins":
@@ -83,13 +87,18 @@ class ExportCode(ABC):
                 self.imports[will_export_under].add(symbol_name)
                 return will_export_under, symbol_name
         # if this global reference has a __package__ attribute
-        # we're importing a whole ass module, but aliasing it, so we need to recover
-        # that alias
-        # TODO figure out a more general way to do this, I think I'm sniffing at import ... as... syntax 
-        elif hasattr(symbol_ref, "__package__"):
-            module_name, symbol_name = symbol_ref.__package__.rsplit(".", 1)
-            self.imports[module_name].add(symbol_name)
-            return module_name, symbol_name
+        # we're importing a whole ass module
+        elif hasattr(symbol_ref, "__package__") and symbol_ref.__package__ is not None:
+            # this is a bare import with no alias
+            # going to use import ...  syntax
+            if symbol_ref.__package__ == "":
+                self.imports["__main__"].add(symbol_name)
+                return "", symbol_name
+            else:
+                # this is a module within a module, so split and import with from ... import syntax
+                module_name, symbol_name = symbol_ref.__package__.rsplit(".", 1)
+                self.imports[module_name].add(symbol_name)
+                return module_name, symbol_name
         
         raise RuntimeError(f"Unable to handle import for {symbol_name} / {symbol_ref}") 
 
@@ -111,8 +120,11 @@ class ExportCode(ABC):
         #   or just arg
         imported = list() # we only generate 1 import statement, but maybe need to generate an annotation with float, float, for example
         base_type = get_origin(kind) if get_origin(kind) else kind
+        type_args = get_args(kind)
+        
         # for handling annotations, the flow here is a little different! if the base type is something like list or tuple
         # then the import name is special-cased out to a particular bit of code in the typing module
+        # this also includes things that type to an alias, like Optional, since we need to import the original
         if base_type == list:
             self.imports["typing"].add("List")
             import_name = "List"
@@ -121,10 +133,12 @@ class ExportCode(ABC):
             import_name = "Tuple"
         elif base_type == UnionType:
             self.imports["typing"].add("Union")
-            import_name = "Union" 
+            import_name = "Union"
+        elif base_type == Union and 'Optional' in str(kind):
+            self.imports["typing"].add("Optional")
+            import_name = "Optional"
         else:
             _, import_name = self.handle_import(base_type.__name__, base_type)
-        type_args = get_args(kind)
 
         if len(type_args) == 0:
             # if we have an import name, that's how we reference this down the line

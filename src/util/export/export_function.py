@@ -46,12 +46,34 @@ class ExportFunction(ExportCode):
     
         return self
 
-    def generate_module(self, path: Path):
+    def generate_module(self, export_dir:Path):
         """ Actually generate the code at path to write a bare function in its own module
         Params:
-            path: the file system directory we want to create a new python file under
+            export_dir: the file system directory we want to create a new python file under
         """
-        raise NotImplementedError("haven't written code for exporting functions for bare modules!")
+        # create required directories
+        export_dir.mkdir(parents=True, exist_ok=True)
+        # trim a leading dot from the export_module if we need to
+        if self.export_module.startswith("."):
+            file_name = self.export_module[1:] + ".py"
+        else:
+            file_name = self.export_module + ".py"
+        path = export_dir / file_name #pathin'
+
+        with open(path.resolve(), "w") as f:
+            # import statements
+            for module, symbols in self.imports.items():
+                if module != "__main__" and module != "":
+                    # everything ends up in the same directory so we don't need to think to hard
+                    # about execution location for imports
+                    f.write(f"from {module} import {', '.join(symbols)}\n")
+                else:
+                    for symbol in symbols:
+                        f.write(f"import {symbol}\n")
+
+            f.write("\n")
+            f.write(self.source)
+            f.write("\n")
     
     @classmethod
     def export(cls, code_object, path:Path):
@@ -59,8 +81,8 @@ class ExportFunction(ExportCode):
         Params:
             code_object: the function we're trying to export
             path: the location to where we eventually want to write a python file
-        """
+        """       
         return ExportFunction(code_object)\
             .handle_references()\
-            .handle_annotations()
-    
+            .handle_annotations()\
+            .generate_module(path)
