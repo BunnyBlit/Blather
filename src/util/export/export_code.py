@@ -3,11 +3,14 @@ import ast
 import re
 from textwrap import indent
 from types import NoneType, UnionType, ModuleType
+import typing
 from typing import Any, List, get_args, get_origin, Union
 from collections import defaultdict
 from abc import ABC, abstractmethod
 from pathlib import Path
 from pprint import pformat
+
+from numpy import isin
 
 class ExportCode(ABC):
     """ Abstract base class for generating a file of code given an representation of that code as
@@ -55,16 +58,43 @@ class ExportCode(ABC):
         except:
             return False
 
+    def add_to_imports_from_typing(self, code_name:str) -> None:
+        """ Helper function to add things to a module's import list. Function checks to see if
+            the name is in typing before adding it
+        Params:
+            code_name (str): the name of some type that we hope is in the typing module
+        """
+        if getattr(typing, code_name, None) is not None:
+            self.imports["typing"].add(code_name)
+    
     def handle_imports_from_ast(self, ast_root:ast.AST) -> List[tuple[str, str]]:
         """ Walk an abstract syntax tree and generate import statements based on what we find.
+            Most of the time, this should be handled by looking at the body and evaluating the
+            variables in its closure. However, annotations _only_ exist in the AST, but still need imports.
+            Most annotations can still be handled by looking at live signature objects _except_ 
+            annotated assignments within a function body. Those annotations are handled here.
         Params:
             ast_root: the root of the AST tree we're walking to generate import statements from
         """
-        #print(ast.dump(ast_root, indent=4))
         for node in ast.walk(ast_root):
+            # if this is an annotated assignment in the AST,
+            # look at the annotation.
             if isinstance(node, ast.AnnAssign):
-                print(ast.dump(node, indent=4))
-                print("--------")   
+                annotation = node.annotation
+                if isinstance(annotation, ast.Name):
+                    # this is a simple annotation, like x:int
+                    self.add_to_imports_from_typing(annotation.id)
+                elif isinstance(annotation, ast.Subscript):
+                    if isinstance(annotation.value, ast.Name):
+                        self.add_to_imports_from_typing(annotation.value.id)
+                    else:
+                        print(f"Unable to add typing annotation from\n{ast.dump(annotation.value)}")
+                    
+                    if isinstance(annotation.slice, ast.Name):
+                        self.add_to_imports_from_typing(annotation.slice.id)
+                    else:
+                        print(f"Unable to add typing annotation from\n{ast.dump(annotation.slice)}")
+
         return []
     
     def handle_import(self, symbol_name, symbol_ref) -> tuple[str, str]:
