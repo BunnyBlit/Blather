@@ -10,6 +10,7 @@ def blog_export(code_object, export_dir=Path("tmp")):
         and then export all of those files to the export directory
         this leaves us with a flat structure, which is helpful because we pre-generate import statements for code we haven't exported yet
     """
+    print(f"Exporting: {code_object}")
     exported = None
     if inspect.isclass(code_object):
         # check inheritance, its how we figure out if a class is a NamedTuple or not
