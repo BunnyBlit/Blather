@@ -16,3 +16,6 @@ Status: draft
 5. show that codegen is extremely alive and well in Python, and that this _never_ works for generated code
 * * RIP to dataclasses
 6. open the dark pit of decompiling python byte code
+* * talk about generating custom pyc files
+* * immediately show why this doesn't work-- import mangling, no stubs, need to build the bytecode shell of a module around arbitrary python
+7. BACK TO DATACLASSES THEN
