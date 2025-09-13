@@ -4,7 +4,7 @@ services:
     container_name: httpd
     restart: unless-stopped
     volumes:
-      - ${HOST_DATA}/web/:/var/www/html
+      - ${HOST_DATA}/web/:/usr/local/apache2/htdocs/
   nginx:
     image: 'jc21/nginx-proxy-manager:latest'
     container_name: nginx
