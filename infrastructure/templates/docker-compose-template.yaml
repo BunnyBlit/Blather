@@ -3,7 +3,8 @@ services:
     image: httpd:latest
     container_name: httpd
     restart: unless-stopped
-    
+    volumes:
+      - ${HOST_DATA}/web/:/var/www/html
   nginx:
     image: 'jc21/nginx-proxy-manager:latest'
     container_name: nginx
