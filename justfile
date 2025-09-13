@@ -9,7 +9,7 @@ input_dir := base_dir + "/content"
 output_dir := base_dir + "/output"
 conf_file := base_dir + "/pelicanconf.py"
 publish_conf := base_dir + "/publishconf.py"
-publish_dir := env_var_or_default('HOST_DATA', '~/data') + "/data"
+publish_dir := env_var_or_default('HOST_DATA', '~/data/web') + "/web"
 
 ssh_host := env_var('BLOG_IP')
 ssh_user := "pix"
