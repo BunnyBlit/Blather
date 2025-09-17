@@ -359,10 +359,10 @@ def flow_check(time: float, state:Tuple[float, float]) -> int:
 def jump(time: float, state:Tuple[float, float]) -> Tuple[float, float]:
     # tuples are immutable, so we gotta make a new one
     # that's probably a thing to think about w.r.t. optimization
-    new_state = tuple([
+    new_state = (
         state[0],
         -0.5 * state[1]
-    ])
+    )
     return new_state
 
 print(f"Flow signature: {inspect.signature(flow)}")

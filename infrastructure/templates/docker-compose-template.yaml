@@ -1,0 +1,31 @@
+services:
+  httpd:
+    image: httpd:latest
+    container_name: httpd
+    restart: unless-stopped
+    volumes:
+      - ${HOST_DATA}/web/:/usr/local/apache2/htdocs/
+  nginx:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ${HOST_APPDATA}/nginx/data:/data
+      - ${HOST_APPDATA}/letsencrypt:/etc/letsencrypt
+    environment:
+      - INITIAL_ADMIN_EMAIL=${NGINX_EMAIL}
+      - INITIAL_ADMIN_PASSWORD=${NGINX_PASS}
+  ddclient:
+    image: lscr.io/linuxserver/ddclient:latest
+    container_name: ddclient
+    environment:
+      - PUID=${GUID}
+      - PGID=${GGID}
+      - TZ=${HOST_TZ}
+    volumes:
+      - ${HOST_APPDATA}/ddclient/config:/config
+    restart: unless-stopped

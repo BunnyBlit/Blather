@@ -9,8 +9,9 @@ input_dir := base_dir + "/content"
 output_dir := base_dir + "/output"
 conf_file := base_dir + "/pelicanconf.py"
 publish_conf := base_dir + "/publishconf.py"
+publish_dir := env_var_or_default('HOST_DATA', '~/data/web') + "/web"
 
-ssh_host := "suspendedsunlight.dev"
+ssh_host := env_var('BLOG_IP')
 ssh_user := "pix"
 ssh_target_dir := "/var/www/html"
 ssh_identity := env_var('BLOG_PUBLISH_KEY_FILE')
@@ -32,6 +33,7 @@ markdown:
         jupyter nbconvert --to notebook --execute --inplace "$input_notebook"
         jupyter nbconvert --to markdown --output-dir "{{input_dir}}" --TagRemovePreprocessor.enabled=True --TagRemovePreprocessor.remove_cell_tags ignore_cell "$input_notebook"
     done
+    set +euxo pipefail
 
 html: markdown
     pelican "{{input_dir}}" -o "{{output_dir}}" -s "{{conf_file}}" {{pelican_opts}}
@@ -57,5 +59,6 @@ devserver-global:
 publish: markdown
     pelican "{{input_dir}}" -o "{{output_dir}}" -s "{{publish_conf}}" {{pelican_opts}}
 
+# this won't work on a remote right now -- don't have all the dependencies installed (jupyter, pelican etc)
 upload: publish
-    rsync -e "ssh -i {{ssh_identity}}" -P -rvzc --include tags --cvs-exclude --delete "{{output_dir}}/" "{{ssh_user}}@{{ssh_host}}:{{ssh_target_dir}}"
+    rsync -e "ssh -i {{ssh_identity}}" -P -rvzc --include tags --cvs-exclude --delete "{{output_dir}}/" "{{ssh_user}}@{{ssh_host}}:{{publish_dir}}"

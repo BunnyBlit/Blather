@@ -46,11 +46,10 @@ Ok, so let's march through, starting with `flow`. Flappy always moves right at a
 
 
 ```python
-from typing import Tuple
 # delta here is just shorthand for "change in"
 # what this is tracking is how the corresponding state elements change over time 
 StateDerivative = namedtuple('StateDerivative', ['delta_x_pos', 'delta_y_pos', 'delta_y_vel', 'delta_pressed'])
-def flow(time:float, state:State) -> Tuple[float, float, float, int]:
+def flow(time:float, state:State) -> tuple[float, float, float, int]:
     return StateDerivative(
         delta_x_pos=2.0, # this is a bit of an extra magic number-- its our going right constant speed.
         delta_y_pos=state[2], # this is y_vel in our state vector
@@ -82,7 +81,7 @@ So, lets add all that in:
 
 
 ```python
-def flow(time:float, state:State) -> Tuple[float, float, float, int]:
+def flow(time:float, state:State) -> tuple[float, float, float, int]:
     if state[3] == 0: # <-- ✨ New! ✨ not pressed
         return StateDerivative(
             delta_x_pos=2.0,
@@ -143,7 +142,7 @@ Ok, `jump` time. Well, flappy only jumps when we provide input. We need to both 
 
 
 ```python
-def jump(time:float, state:State) -> Tuple[float, float, float, int]:
+def jump(time:float, state:State) -> tuple[float, float, float, int]:
     # a jump is the instant when the flap button is pressed
     new_pressed = abs(state[3] - 1) # a bit of a trick to flip 1 to 0 and 0 to 1. Not efficient. That'll come up later 
     if new_pressed == 1: #if we're going from not pressed to pressed...
@@ -211,7 +210,7 @@ Let's start with the last thing because it's in the name: let's make this flappy
 
 We use the `jump` function to move to the "flapping" state from the "falling" state (and from "falling" back to "flapping"). We know we _should_ be jumping when `jump_check` says so.
 
-So, when do we want `jump_check` to be 1? Well, lets just say it should be one between certain times to start, which sorta says "after 0.5 time units from when the sim starts, a player presses the flap button. They release it at 0.6 time units".
+So, when do we want `jump_check` to be 1? Well, lets just hard code it to say "after 0.5 time units from when the sim starts, a player presses the flap button. They release it at 0.6 time units".
 
 
 ```python
@@ -245,7 +244,7 @@ So, uh, how are we going to do this? We could have a new state, `dead` and jump 
 
 We know that `jump_check` stops the sim early (with ```jump_check.terminal = True```), so collision is like a jump where we just stop simulating[^2]. Let's add a collision detection function and modify both `jump_check` and `solve_system`:
 
-[^2]: this is obviously not true in general-- collision can be a jump to a state where you can no longer continue on your current trajectory (hitting a wall). Maybe you get some invulnerability frames and jump to a state with less life.
+[^2]: this is obviously not true in general-- collision can be a jump to a state where you can no longer continue on your current trajectory (hitting a wall). Maybe the hypothetical game has a health bar and you just jump to a state with less life.
 
 
 ```python
@@ -277,8 +276,8 @@ jump_check.terminal = True # we've got a new function, so we need to set this ag
 
 # and now we also need to change solve_system to distinguish between solution stops-- did we
 # stop flowing because we hit something or because we started jumping?
-def solve_system(system:HybridSystem, params:SystemParameters, start_state:State) -> List[Any]:
-    solution:List[Any] = [] # gradual typing is neat!
+def solve_system(system:HybridSystem, params:SystemParameters, start_state:State) -> list[Any]:
+    solution:list[Any] = [] # gradual typing is neat!
     cur_time = params.start_time
     number_of_jumps = 0
     state = start_state
@@ -331,7 +330,7 @@ from pprint import pprint
 class BoundingBox():
     """ Its a rectangle! Represented by the top left point, a width and a height
     """
-    top_left: Tuple[float, float]
+    top_left: tuple[float, float]
     width: float
     height: float
 
@@ -342,7 +341,7 @@ class FlappyLevel():
     """
     floor:float
     ceiling:float
-    obstacles: List[BoundingBox]
+    obstacles: list[BoundingBox]
 
 sample_level = FlappyLevel(
     floor=0.0,
@@ -388,33 +387,49 @@ Because [bound methods of instances](https://docs.python.org/3.11/reference/data
 Does that make sense? I hope so. 3,2,1, let's jam.
 
 [^3]: The Haskell people were right, this sucks
+
 [^4]: this behavior is not free-- I do pay a penalty for passing in the instance as the first argument, but lord, do I have bigger problems elsewhere.
 
 
 ```python
 from util.print import blog_print
+from dataclasses import dataclass
+
+@dataclass
+class SystemParameters:
+    start_time: float
+    end_time: float
+    max_jumps: int
+
+    # ✨ New! ✨ moving hardcoded terms out to this parameters structure
+    pressed_velocity: float # how fast should flappy rise when the button is pressed?
+    horizontal_velocity: float # how fast should flappy go to the right
+    gravity_acceleration:float # acceleration due to gravity
 
 class FlappyHybridSim:
     """ This simulation class combines all the simulation constants: level, simulation parameters and ye four
         functions.
     """
     level: FlappyLevel
+    cur_params: SystemParameters | None # only gets set while we're in solve_system, None otherwise
+    # why aren't these in system params? They don't change! I want to keep these the same
+    # across many simulation runs
     max_step:float
     atol:float
     rtol:float
+    __slots__ = "level", "cur_params", "max_step", "atol", "rtol"
+
     def __init__(self, level:FlappyLevel):
         self.level = level
-        # probably should be parameters, but spoilers: these numbers are basically never changing
-        # this pressed velocity term is also equal to how fast flappy goes forward
-        self.pressed_velocity=2.0
-        self.falling_acceleration=-9.81
+        self.cur_params = None
         self.max_step=0.01
         self.atol=1e-6
         self.rtol=1e-6
 
     # ✨ New! ✨ logic to make sure we're not hitting a box, and integration with our level data structure
-    def solve_system(self, params:SystemParameters, start_state:State) -> List[Any]:
-        solution:List[Any] = [] # gradual typing is neat!
+    def solve_system(self, params:SystemParameters, start_state:State) -> list[Any]:
+        solution:list[Any] = [] # gradual typing is neat!
+        self.cur_params = params
         cur_time = params.start_time
         number_of_jumps = 0
         state = start_state
@@ -425,9 +440,9 @@ class FlappyHybridSim:
                 (cur_time, params.end_time),
                 state,
                 events=[self._jump_check],
-                max_step=0.01,
-                atol=1e-6,
-                rtol=1e-6
+                max_step=self.max_step,
+                atol=self.atol,
+                rtol=self.rtol
             )
             if ode_sol.status == -1:
                 print(f"Solver failed with message: {ode_sol.message}")
@@ -436,15 +451,15 @@ class FlappyHybridSim:
                 solution.append((time, state))
 
             cur_time, state = solution[-1]
-        
-  
+         
             if self._check_collision(state):
+                self.cur_params = None
                 return solution
         
             if (self._jump_check(cur_time, state) == 0):
                 state = self._jump(cur_time, state)
                 number_of_jumps += 1
-    
+        self.cur_params = None 
         return solution
     
     # ✨ New! ✨ We're integrating the level into this function!
@@ -466,21 +481,26 @@ class FlappyHybridSim:
 
         return False
 
-    # you've seen the rest of these functions before, they're just part of a class now
-    # I'm using the _ to imply that these should never be called outside the `solve_system`
-    # function. No touchie.
-    def _flow(self, time:float, state:State) -> Tuple[float, float, float, int]:
+    # our four hybrid system functions have been refactored to work with the new constants in
+    # self.cur_params (and also get an _ prefix to say: "hey, don't call this")
+    def _flow(self, time:float, state:State) -> tuple[float, float, float, int]:
+        # this little test shows that our extra flexibility-- moving things like
+        # horizontal velocity to a passed in parameter-- is not free: we have an extra check
+        # to perform now
+        if not self.cur_params:
+            raise RuntimeError("Unable to get run parameters!")
+
         if state[3] == 0:
             return StateDerivative(
-                delta_x_pos=self.pressed_velocity,
+                delta_x_pos=self.cur_params.horizontal_velocity,
                 delta_y_pos=state[2],
-                delta_y_vel=self.falling_acceleration,
+                delta_y_vel=self.cur_params.gravity_acceleration,
                 delta_pressed=0
             )
         elif state[3] == 1: #pressed
             return StateDerivative(
-                delta_x_pos=self.pressed_velocity, 
-                delta_y_pos=self.pressed_velocity,
+                delta_x_pos=self.cur_params.horizontal_velocity, 
+                delta_y_pos=self.cur_params.pressed_velocity,
                 delta_y_vel=0,
                 delta_pressed=0 
             )
@@ -490,13 +510,16 @@ class FlappyHybridSim:
     def _flow_check(self, time:float, state:State) -> int:
         return 0
 
-    def _jump(self, time:float, state:State) -> Tuple[float, float, float, int]:
+    def _jump(self, time:float, state:State) -> tuple[float, float, float, int]:
+        if not self.cur_params:
+            raise RuntimeError("Unable to get runtime parameters!")
+
         new_pressed = abs(state[3] - 1)
         if new_pressed == 1:
             return State(
                 x_pos=state[0],
                 y_pos=state[1],
-                y_vel=self.pressed_velocity,
+                y_vel=self.cur_params.pressed_velocity,
                 pressed=new_pressed
             )
         else:
@@ -522,10 +545,17 @@ class FlappyHybridSim:
             return 1
     _jump_check.terminal = True
 
-hybrid_system_params = SystemParameters(0.0, 5.0, 5)
+single_run_params = SystemParameters(
+    start_time=0.0,
+    end_time=5.0,
+    max_jumps=5,
+    pressed_velocity=2.0,
+    horizontal_velocity=2.0,
+    gravity_acceleration=-9.81
+)
 start_state = State(x_pos=0.0, y_pos=2.0, y_vel=0.0, pressed=0.0)
 sim = FlappyHybridSim(sample_level)
-solution = sim.solve_system(hybrid_system_params, start_state)
+solution = sim.solve_system(single_run_params, start_state)
 blog_print(solution, lambda line: f"State at {line[0]:0.04f}: {[f'{val:0.04f}' for val in line[1]]}")
 ```
 
@@ -542,7 +572,7 @@ Ugh, as a graph, please?
 
 ![A very silly level of flappy bird, where we have two pipes that flappy narrowly skips through]({static}/images/flapping_birds_single_flap_level.svg)
 
-Ok, well, it's not the best level of all time but it is a level! I'm gonna make a better level. And just as a fun little treat, what if I didn't have to write a Flappy bird level by hand each time? I don't really have a good way to do that, after all. Writing out all that level data by hand in Python isn't a super funky fresh time. What if I had a little procedural level generation, as a treat?
+Ok, well, it's not the best level of all time but it is a level! I'm gonna make a better level. And just as a fun little treat, what if I didn't have to write a Flappy bird level by hand each time? I don't really have a good way to do that-- writing out all that level data by hand in Python isn't a super funky fresh time. How about some procedural level generation, as a treat?
 
 ### A Little Procedural Level Generation, as a Treat
 
@@ -597,7 +627,14 @@ def generate_flappy_level(seed: Optional[int]) -> FlappyLevel:
 
     return FlappyLevel(lower_bound, upper_bound, pipes)
 
-hybrid_system_params = SystemParameters(0.0, 5.0, 5)
+hybrid_system_params = SystemParameters(
+    start_time=0.0,
+    end_time=5.0,
+    max_jumps=5,
+    pressed_velocity=2.0,
+    horizontal_velocity=2.0,
+    gravity_acceleration=-9.81
+)
 start_state = State(x_pos=0.0, y_pos=2.0, y_vel=0.0, pressed=0.0)
 generated_level = generate_flappy_level(99)
 sim = FlappyHybridSim(generated_level)
