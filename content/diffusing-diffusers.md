@@ -125,7 +125,7 @@ for i, image in enumerate(dataset[:4]["image"]):
 fig.show()
 ```
 
-    /var/folders/7w/3t_b1j3569x4kpjtvdfnv_bm0000gn/T/ipykernel_33050/1671847463.py:7: UserWarning: Matplotlib is currently using module://matplotlib_inline.backend_inline, which is a non-GUI backend, so cannot show the figure.
+    /var/folders/7w/3t_b1j3569x4kpjtvdfnv_bm0000gn/T/ipykernel_71364/1671847463.py:7: UserWarning: Matplotlib is currently using module://matplotlib_inline.backend_inline, which is a non-GUI backend, so cannot show the figure.
       fig.show()
 
 
@@ -168,7 +168,7 @@ fig.show()
     Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
     Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
     Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
-    /var/folders/7w/3t_b1j3569x4kpjtvdfnv_bm0000gn/T/ipykernel_33050/2104188261.py:6: UserWarning: Matplotlib is currently using module://matplotlib_inline.backend_inline, which is a non-GUI backend, so cannot show the figure.
+    /var/folders/7w/3t_b1j3569x4kpjtvdfnv_bm0000gn/T/ipykernel_71364/2104188261.py:6: UserWarning: Matplotlib is currently using module://matplotlib_inline.backend_inline, which is a non-GUI backend, so cannot show the figure.
       fig.show()
 
 
@@ -274,7 +274,7 @@ print(f"Loss between noisy sample and predicted noise: {loss}")
 # we then do the usual stuff with an optimizer and learning rate scheduler
 ```
 
-    Loss between noisy sample and predicted noise: 1.1020089387893677
+    Loss between noisy sample and predicted noise: 1.1421899795532227
 
 
 ### Ok, all of this is kinda all over the place lets go from the top

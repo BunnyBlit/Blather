@@ -85,8 +85,8 @@ print(f"original \"local\" function is at: {id(hi_pikachu)}")
 print(f"function from our dynamic module: {id(tmp.importing_in_python.pika.hi_pikachu)}")
 ```
 
-    original "local" function is at: 4576750592
-    function from our dynamic module: 4576753632
+    original "local" function is at: 4425267008
+    function from our dynamic module: 4425266848
 
 
 But, if we mess with the imports a liiiiiittle bit
@@ -98,8 +98,8 @@ print(f"function from our dynamic module: \t{id(tmp.importing_in_python.pika.hi_
 print(f"the \"local\" version: \t\t\t{id(hi_pikachu)}")
 ```
 
-    function from our dynamic module: 	4576753632
-    the "local" version: 			4576753632
+    function from our dynamic module: 	4425266848
+    the "local" version: 			4425266848
 
 
 I "overwrote" the "local" implementation of `hi_pikachu`. Doing crimes in interpreted languages is fun.
