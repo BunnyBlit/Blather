@@ -32,6 +32,10 @@ markdown:
         jupyter nbconvert --to notebook --execute --inplace "$input_notebook"
         jupyter nbconvert --to markdown --output-dir "{{input_dir}}" --TagRemovePreprocessor.enabled=True --TagRemovePreprocessor.remove_cell_tags ignore_cell "$input_notebook"
     done
+    #for pure_markdown in "{{src_dir}}/*.md"; do
+        # just copy over the markdown
+    #    cp $pure_markdown "{{input_dir}}"
+    #done
     set +euxo pipefail
 
 html: markdown
