@@ -148,3 +148,6 @@ dmypy.json
 
 #ignore directory for temporary artifacts
 **/tmp/
+
+#content is dynamically generated from Cholostet
+content/
